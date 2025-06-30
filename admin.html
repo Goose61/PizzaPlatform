@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Pizza Community</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- Floating Pizza Animation -->
+    <div class="admin-bg-animation">
+        <div class="floating-pizza">🍕</div>
+        <div class="floating-pizza">🍕</div>
+        <div class="floating-pizza">🍕</div>
+        <div class="floating-pizza">🍕</div>
+        <div class="floating-pizza">🍕</div>
+    </div>
+
+    <div class="admin-login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="admin-brand">
+                    <i class="fas fa-pizza-slice"></i>
+                    <h1>Pizza Community</h1>
+                    <p>Admin Dashboard</p>
+                </div>
+            </div>
+            
+            <div class="login-form-container">
+                <form id="admin-login-form" class="login-form" onsubmit="handleAdminLogin(event)">
+                    <div class="form-group">
+                        <label for="admin-username">Username</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="admin-username" name="username" required autocomplete="username">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="admin-password">Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="admin-password" name="password" required autocomplete="current-password">
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="admin-remember">
+                            <span class="checkmark"></span>
+                            Remember me for 24 hours
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login to Dashboard
+                    </button>
+                </form>
+                
+                <div class="login-footer">
+                    <div class="demo-credentials">
+                        <h4>🔐 Administrator Access Only</h4>
+                        <p>This dashboard is restricted to authorized administrators.</p>
+                        <p>Contact the project team if you need access.</p>
+                    </div>
+                    
+                    <a href="index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Website
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Admin credentials - DEMO ONLY (Not for production)
+        // TODO: Implement proper server-side authentication
+        const DEMO_CREDENTIALS = {
+            'demo': 'demo123'
+        };
+        
+        // Admin activity logging
+        function logAdminActivity(username, action, details = '') {
+            const log = {
+                timestamp: new Date().toISOString(),
+                username: username,
+                action: action,
+                details: details,
+                ip: 'localhost', // In production, get real IP
+                userAgent: navigator.userAgent
+            };
+            
+            // Get existing logs
+            const existingLogs = JSON.parse(localStorage.getItem('pizza_admin_logs') || '[]');
+            
+            // Add new log
+            existingLogs.unshift(log);
+            
+            // Keep only last 1000 logs
+            if (existingLogs.length > 1000) {
+                existingLogs.splice(1000);
+            }
+            
+            // Save logs
+            localStorage.setItem('pizza_admin_logs', JSON.stringify(existingLogs));
+            
+            console.log('Admin Activity Logged:', log);
+        }
+        
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const rememberMe = document.getElementById('admin-remember').checked;
+            
+            // DEMO AUTHENTICATION ONLY - NOT SECURE FOR PRODUCTION
+            if (!DEMO_CREDENTIALS[username] || DEMO_CREDENTIALS[username] !== password) {
+                showLoginMessage('❌ Invalid credentials. Use demo/demo123 for demo access.', 'error');
+                logAdminActivity(username, 'FAILED_LOGIN_ATTEMPT', 'Invalid demo credentials');
+                document.querySelector('.login-card').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.login-card').classList.remove('shake');
+                }, 500);
+                return;
+            }
+            
+            // Successful login
+            const loginData = {
+                username: username,
+                loginTime: new Date().toISOString(),
+                rememberMe: rememberMe,
+                sessionId: generateSessionId()
+            };
+            
+            // Store login data
+            if (rememberMe) {
+                localStorage.setItem('pizza_admin_login', JSON.stringify(loginData));
+            } else {
+                sessionStorage.setItem('pizza_admin_login', JSON.stringify(loginData));
+            }
+            
+            // Log successful login
+            logAdminActivity(username, 'SUCCESSFUL_LOGIN', `Session: ${loginData.sessionId}`);
+            
+            // Show success message
+            showLoginMessage('✅ Login successful! Redirecting to dashboard...', 'success');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = 'admin-dashboard.html';
+            }, 1500);
+        }
+        
+        function generateSessionId() {
+            return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('admin-password');
+            const toggleButton = document.querySelector('.toggle-password');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+        
+        function showLoginMessage(message, type) {
+            // Remove existing messages
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            const form = document.querySelector('.login-form-container');
+            form.insertBefore(messageDiv, form.firstChild);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentElement) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginData = localStorage.getItem('pizza_admin_login') || sessionStorage.getItem('pizza_admin_login');
+            
+            if (loginData) {
+                const data = JSON.parse(loginData);
+                const loginTime = new Date(data.loginTime);
+                const now = new Date();
+                const timeDiff = now - loginTime;
+                
+                // Check if login is still valid
+                if (!data.rememberMe || timeDiff < 24 * 60 * 60 * 1000) {
+                    // Already logged in, redirect to dashboard
+                    window.location.href = 'admin-dashboard.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

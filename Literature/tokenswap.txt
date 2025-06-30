@@ -1,0 +1,135 @@
+Build a full-stack Solana token swap system for non-custodial users with these components:
+
+1. **Frontend (React)**
+- Embed Jupiter Terminal with custom config:
+  ```jsx
+  <div id="swap-container"></div>
+  <script src="https://terminal.jup.ag/main-v1.js"></script>
+  <script>
+    window.Jupiter.init({
+      displayMode: "integrated",
+      integratedTargetId: "swap-container",
+      endpoint: "http://localhost:8899", // Self-hosted RPC
+      onRequestConnectWallet: () => handleCustodialLogin(),
+      passthroughWalletContextState: { publicKey: userSolanaPublicKey }
+    });
+  </script>
+
+    Add MoonPay buy widget:
+    jsx
+
+    <MoonPayProvider 
+      apiKey="YOUR_KEY"
+      environment="sandbox"
+      onSuccess={tx => creditUserWallet(tx)}
+    />
+
+    Custodial login form (email/password)
+
+    Backend (Node.js/Express)
+
+    Custodial wallet manager:
+    javascript
+
+    const { Keypair } = require('@solana/web3.js');
+    const { encrypt, decrypt } = require('crypto-js');
+
+    // Generate and store encrypted keypair
+    app.post('/create-wallet', (req, res) => {
+      const keypair = Keypair.generate();
+      const encryptedKey = encrypt(
+        JSON.stringify(Array.from(keypair.secretKey)), 
+        process.env.MASTER_KEY
+      ).toString();
+      // Store encryptedKey + userID in PostgreSQL
+    });
+
+    Transaction Signer Service
+
+javascript
+
+app.post('/sign-transaction', async (req, res) => {
+  const { userID, serializedTx } = req.body;
+  const encryptedKey = await db.getUserKey(userID);
+  const secretKey = decrypt(encryptedKey, process.env.MASTER_KEY);
+  const keypair = Keypair.fromSecretKey(
+    Uint8Array.from(JSON.parse(secretKey))
+  );
+  
+  const tx = Transaction.from(Buffer.from(serializedTx, 'base64'));
+  tx.sign(keypair);
+  res.send(tx.serialize().toString('base64'));
+});
+
+    Self-Hosted RPC Node
+
+bash
+
+# Solana validator setup
+solana config set --url localhost
+solana-validator \
+  --ledger /mnt/solana/ledger \
+  --rpc-port 8899 \
+  --dynamic-port-range 8000-8020 \
+  --private-rpc \
+  --no-voting \
+  --enable-rpc-transaction-history
+
+    Security Setup
+
+    AWS KMS for master key encryption
+
+    NGINX reverse proxy with rate limiting
+
+    PostgreSQL encrypted at rest
+
+    Required Packages
+
+json
+
+{
+  "dependencies": {
+    "@solana/web3.js": "^1.86.0",
+    "@jup-ag/core": "^3.1.0",
+    "crypto-js": "^4.1.1",
+    "@moonpay/moonpay-react": "^1.4.0"
+  }
+}
+
+Key Implementation Notes:
+
+    Wallet Flow
+
+        User signs up → Backend generates keypair → Encrypts with KMS master key → Stores in DB
+
+        On login: Frontend fetches public key → Passes to Jupiter Terminal via passthroughWalletContextState
+
+    Swap Execution
+    Diagram
+    Code
+
+sequenceDiagram
+  Frontend->>Jupiter: Request swap quote
+  Jupiter->>Frontend: Return serialized tx
+  Frontend->>Backend: Send tx + userID
+  Backend->>Solana: Sign tx with user key
+  Backend->>Frontend: Signed tx
+  Frontend->>Solana: Broadcast tx
+
+Critical Security
+
+    Never expose decrypted private keys
+
+    Use AWS KMS envelope encryption
+
+    Store master key in hardware module (HSM)
+
+    Implement withdrawal whitelisting
+
+Cost Optimization
+
+    Batch transactions
+
+    Use priority fee API for congestion management
+
+    Compress NFT metadata via state compression

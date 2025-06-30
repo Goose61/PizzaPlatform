@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Pizza Community</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="admin-dashboard-body">
+    <header class="admin-header">
+        <div class="admin-nav">
+            <div class="admin-brand">
+                <i class="fas fa-pizza-slice"></i>
+                <span>Pizza Community Admin</span>
+            </div>
+            <div class="admin-user">
+                <span id="current-user">Admin</span>
+                <button id="admin-logout" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <nav class="admin-menu">
+                <a href="#overview" class="nav-item active" data-view="overview">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#locations" class="nav-item" data-view="locations">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Locations</span>
+                </a>
+                <a href="#map-view" class="nav-item" data-view="map">
+                    <i class="fas fa-globe"></i>
+                    <span>Map View</span>
+                </a>
+            </nav>
+            
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <button class="btn btn-sm btn-secondary" onclick="refreshData()">
+                    <i class="fas fa-sync"></i> Refresh Data
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="downloadLogFile()">
+                    <i class="fas fa-download"></i> Download Logs
+                </button>
+                <a href="index.html" class="btn btn-sm btn-outline">
+                    <i class="fas fa-eye"></i> View Website
+                </a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div id="overview-section" class="dashboard-section active">
+                <div class="admin-section">
+                    <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-partners">0</h3>
+                                <p>Total Partners</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-pizza-slice"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-meals">0</h3>
+                                <p>Meals Served</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="countries-reached">0</h3>
+                                <p>Countries Reached</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="active-campaigns">0</h3>
+                                <p>Active Campaigns</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress bars and recent activity -->
+                    <div class="progress-section">
+                        <div class="progress-group">
+                            <h3>Progress Metrics</h3>
+                            <div class="progress-item" id="partner-growth">
+                                <label>Partner Growth</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                            <div class="progress-item" id="meal-distribution">
+                                <label>Meal Distribution</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                            <div class="progress-item" id="community-engagement">
+                                <label>Community Engagement</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-group">
+                            <h3>Recent Activity</h3>
+                            <div class="activity-list" id="recent-activity-list">
+                                <!-- Activity items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="locations-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-map-marker-alt"></i> Locations Overview</h2>
+                    <p>View and edit location information. Click on map pins to see details.</p>
+                    
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="location-search" placeholder="Search locations...">
+                        </div>
+                        <div class="filter-controls">
+                            <select id="status-filter">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="progress">In Progress</option>
+                                <option value="planned">Planned</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Combined Map and Table View -->
+                    <div class="locations-view-container">
+                        <!-- Map showing pin locations -->
+                        <div class="locations-map-container">
+                            <h3><i class="fas fa-map"></i> Locations Map</h3>
+                            <div id="locations-display-map" class="admin-leaflet-map" style="height: 400px;"></div>
+                        </div>
+
+                        <!-- Table showing location details -->
+                        <div class="locations-table-container">
+                            <h3><i class="fas fa-list"></i> Location Details</h3>
+                            <table id="locations-table" class="locations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name & Location</th>
+                                        <th>Status</th>
+                                        <th>Partners</th>
+                                        <th>Meals Served</th>
+                                        <th>Date Added</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Location rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div id="map-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-globe"></i> Map Management</h2>
+                    <p>Interactive map for adding, moving, and managing location pins. Click on the map to add new locations or drag existing pins to reposition them.</p>
+                    
+                    <div class="map-controls">
+                        <button class="btn btn-sm btn-primary" onclick="enableAddLocationMode()">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="updateMapMarkers()">
+                            <i class="fas fa-sync"></i> Refresh Map
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="if(window.adminMap) window.adminMap.setView([20, 0], 2)">
+                            <i class="fas fa-crosshairs"></i> Center View
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="toggleEditMode()">
+                            <i class="fas fa-edit"></i> Edit Mode
+                        </button>
+                    </div>
+
+                    <div class="admin-map-container">
+                        <div id="admin-map" class="admin-leaflet-map"></div>
+                    </div>
+
+                    <!-- Add Location Form (shown when adding new location) -->
+                    <div id="location-form-container" class="location-form-container" style="display: none;">
+                        <h3><i class="fas fa-map-pin"></i> Add New Location</h3>
+                        <form id="add-location-form" class="location-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="location-name">Location Name *</label>
+                                    <input type="text" name="location-name" id="location-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="city">City *</label>
+                                    <input type="text" name="city" id="city" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="country">Country *</label>
+                                    <input type="text" name="country" id="country" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status">Status *</label>
+                                    <select name="status" id="status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="progress">In Progress</option>
+                                        <option value="planned">Planned</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude *</label>
+                                    <input type="number" name="latitude" id="latitude" step="any" required readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="longitude">Longitude *</label>
+                                    <input type="number" name="longitude" id="longitude" step="any" required readonly>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="meals-served">Meals Served</label>
+                                    <input type="number" name="meals-served" id="meals-served" min="0" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="partners">Partners</label>
+                                    <input type="number" name="partners" id="partners" min="0" value="0">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact">Contact Name</label>
+                                    <input type="text" name="contact" id="contact">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="tel" name="phone" id="phone">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" name="email" id="email">
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" onclick="cancelAddLocation()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add Location
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="map-data.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
