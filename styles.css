@@ -2873,4 +2873,99 @@ body, .hero, .main-content, .footer.meme-footer {
   justify-content: center;
 }
 
+/* 1. Falling pizza/emoji background */
+.bg-falling-emojis {
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+}
+.falling-emoji {
+  position: absolute;
+  font-size: 2.2rem;
+  opacity: 0.85;
+  animation: fall-emoji 7s linear infinite;
+}
+@keyframes fall-emoji {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 0.7; }
+  80% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0.7; }
+}
+
+/* 2. Map legend text color */
+.map-legend, .meme-legend {
+  color: #111 !important;
+  font-weight: bold;
+}
+.map-legend h4, .meme-legend h4 {
+  color: #ff9800 !important;
+  font-weight: bold;
+}
+.legend-item span {
+  color: #111 !important;
+  font-weight: bold;
+}
+
+/* 3. Map subheader text color */
+.map-description, .meme-description {
+  color: #111 !important;
+  font-weight: 600;
+}
+
+/* 4. Remove text from social buttons in header */
+.header .social-btn .social-text { display: none !important; }
+
+/* 5. Remove white circle from main logo and footer logo */
+.brand-logo, .footer-logo {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* 6. Fix contract address box overflow */
+.contract-address, .footer-contract {
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.contract-text, .contract-mini {
+  word-break: break-all;
+  overflow-x: auto;
+  display: inline-block;
+  max-width: 80vw;
+}
+
+/* 7. Align nav section buttons with header content */
+.nav-menu {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  gap: 3.5rem;
+}
+.nav-menu a {
+  margin: 0;
+  padding: 0.2rem 0.5rem;
+  font-size: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 8. Make .badge-text a heading */
+.badge-text {
+  font-size: 2.1rem;
+  font-family: 'Bowlby One', 'Bungee', 'Comic Neue', cursive, sans-serif;
+  color: #ff9800;
+  text-shadow: 0 0 12px #fff200, 0 0 6px #ff9800;
+  margin-bottom: 1.2rem;
+  display: block;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Remove emoji rows above badge-text if any */
+.hero-stars { display: none !important; }
+
 </rewritten_file> 
