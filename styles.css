@@ -1,4 +1,4 @@
-/* Reset and Base Styles */
+/* Reset and Base Styles - MEME COIN EDITION */
 * {
     margin: 0;
     padding: 0;
@@ -6,10 +6,19 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #1a1a1a;
+    font-family: 'Comic Neue', 'Arial', sans-serif;
+    background: linear-gradient(45deg, #ff0080, #00ff80, #8000ff, #ff8000);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     color: #ffffff;
     line-height: 1.6;
+    overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .container {
@@ -18,14 +27,22 @@ body {
     padding: 0 20px;
 }
 
-/* Header */
+/* MEME COIN Header */
 .header {
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, #ff0080 0%, #00ff80 25%, #8000ff 50%, #ff8000 75%, #ff0080 100%);
+    background-size: 300% 300%;
+    animation: gradientPulse 3s ease infinite;
     padding: 1rem 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 0, 128, 0.6);
+    border-bottom: 3px solid #ffffff;
+}
+
+@keyframes gradientPulse {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .header .container {
@@ -37,14 +54,31 @@ body {
 .nav-brand {
     display: flex;
     align-items: center;
-    font-size: 1.5rem;
+    font-family: 'Bungee', cursive;
+    font-size: 1.8rem;
     font-weight: bold;
-    color: #ff6b35;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    animation: brandGlow 2s ease-in-out infinite alternate;
 }
 
-.nav-brand i {
-    margin-right: 10px;
-    font-size: 2rem;
+@keyframes brandGlow {
+    from { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
+    to { text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 0, 128, 0.8); }
+}
+
+.nav-brand .brand-logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 0.8rem;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    animation: logoSpin 6s linear infinite;
+}
+
+@keyframes logoSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .nav-menu {
@@ -189,16 +223,14 @@ body {
 }
 
 .btn-primary {
-    background-color: #ff6b35;
-    color: #ffffff;
-    border-color: #ff6b35;
+    background: linear-gradient(90deg, #ff9800 0%, #ffe066 100%) !important;
+    color: #222 !important;
+    border-color: #ff9800 !important;
 }
 
 .btn-primary:hover {
-    background-color: #ff5722;
-    border-color: #ff5722;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    background: linear-gradient(90deg, #ffe066 0%, #ff9800 100%) !important;
+    color: #222 !important;
 }
 
 .btn-outline {
@@ -249,7 +281,113 @@ body {
     width: 100%;
 }
 
-/* Background Animation */
+/* MEME COIN Buttons */
+.meme-btn {
+    position: relative;
+    background: linear-gradient(90deg, #ff9800 0%, #ffe066 100%) !important;
+    color: #222 !important;
+    border-color: #ff9800 !important;
+    background-size: 300% 300%;
+    animation: btnGradientShift 3s ease infinite;
+    border: 3px solid #ffffff;
+    border-radius: 15px;
+    font-family: 'Comic Neue', cursive;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+@keyframes btnGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.meme-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 0, 128, 0.6);
+    animation-duration: 1s;
+}
+
+.meme-btn .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.meme-btn:hover .btn-shine {
+    left: 100%;
+}
+
+.meme-btn .btn-icon {
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+    animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+}
+
+.main-donate-btn {
+    font-size: 1.3rem;
+    padding: 1.5rem 3rem;
+    margin: 1rem 0;
+}
+
+.main-donate-btn:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 30px rgba(255, 0, 128, 0.8);
+}
+
+/* Contract Address Styles */
+.contract-address {
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #00ff80;
+    margin: 1rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.contract-full {
+    font-size: 0.9rem;
+    color: #00ff80;
+    word-break: break-all;
+    text-shadow: 0 0 10px rgba(0, 255, 128, 0.5);
+}
+
+.copy-btn {
+    background: linear-gradient(45deg, #00ff80, #0080ff);
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 1rem;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 255, 128, 0.6);
+}
+
+/* MEME COIN Background Animation */
 .bg-animation {
     position: fixed;
     top: 0;
@@ -263,87 +401,271 @@ body {
 
 .floating-pizza {
     position: absolute;
-    font-size: 2rem;
-    opacity: 0.1;
-    animation: float 6s ease-in-out infinite;
+    font-size: 3rem; /* Increased by 50% */
+    opacity: 0.4; /* More visible */
+    animation: float 4s ease-in-out infinite;
     pointer-events: none;
+    text-shadow: 0 0 15px rgba(255, 107, 53, 0.7);
+    filter: drop-shadow(0 0 10px #ff6b35);
 }
 
 .floating-pizza:nth-child(1) {
-    left: 10%;
-    animation-delay: -0.5s;
-    animation-duration: 7s;
-}
-
-.floating-pizza:nth-child(2) {
-    left: 20%;
-    animation-delay: -2s;
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
     animation-duration: 5s;
 }
 
-.floating-pizza:nth-child(3) {
-    left: 60%;
-    animation-delay: -1.5s;
-    animation-duration: 8s;
-}
-
-.floating-pizza:nth-child(4) {
-    left: 80%;
-    animation-delay: -0.8s;
+.floating-pizza:nth-child(2) {
+    top: 25%;
+    left: 85%;
+    animation-delay: 0.8s;
     animation-duration: 6s;
 }
 
+.floating-pizza:nth-child(3) {
+    top: 45%;
+    left: 15%;
+    animation-delay: 1.6s;
+    animation-duration: 4.5s;
+}
+
+.floating-pizza:nth-child(4) {
+    top: 65%;
+    left: 75%;
+    animation-delay: 2.4s;
+    animation-duration: 5.5s;
+}
+
 .floating-pizza:nth-child(5) {
+    top: 85%;
+    left: 40%;
+    animation-delay: 3.2s;
+    animation-duration: 7s;
+}
+
+.floating-pizza:nth-child(6) {
+    top: 35%;
+    left: 60%;
+    animation-delay: 4s;
+    animation-duration: 4s;
+}
+
+.floating-pizza:nth-child(7) {
+    top: 55%;
     left: 90%;
-    animation-delay: -3s;
-    animation-duration: 9s;
+    animation-delay: 4.8s;
+    animation-duration: 6.5s;
+}
+
+.floating-pizza:nth-child(8) {
+    top: 75%;
+    left: 10%;
+    animation-delay: 5.6s;
+    animation-duration: 5.8s;
+}
+
+/* Pizza Toppings Background */
+.pizza-toppings-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.topping {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: toppingFloat 8s ease-in-out infinite;
+    opacity: 0.2;
+}
+
+.topping.pepperoni {
+    top: 15%;
+    left: 25%;
+    animation-delay: 0s;
+}
+
+.topping.mushroom {
+    top: 35%;
+    left: 70%;
+    animation-delay: 1s;
+}
+
+.topping.cheese {
+    top: 55%;
+    left: 40%;
+    animation-delay: 2s;
+}
+
+.topping.olive {
+    top: 75%;
+    left: 80%;
+    animation-delay: 3s;
+}
+
+.topping.pepper {
+    top: 25%;
+    left: 10%;
+    animation-delay: 4s;
+}
+
+.topping.tomato {
+    top: 65%;
+    left: 20%;
+    animation-delay: 5s;
 }
 
 @keyframes float {
     0%, 100% {
-        transform: translateY(100vh) rotate(0deg);
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translateY(-15px) rotate(90deg) scale(1.1);
     }
     50% {
-        transform: translateY(-10vh) rotate(180deg);
+        transform: translateY(-30px) rotate(180deg) scale(0.9);
+    }
+    75% {
+        transform: translateY(-15px) rotate(270deg) scale(1.1);
     }
 }
 
-/* Hero Section */
-.hero {
-    background: linear-gradient(135deg, #ff6b35, #ff8c42);
-    padding: 4rem 0;
-    text-align: center;
-    position: relative;
+@keyframes toppingFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
 }
 
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: 2rem;
+/* MEME COIN Hero Section */
+.hero {
+    background: linear-gradient(135deg, #ff0080, #00ff80, #8000ff, #ff8000);
+    background-size: 400% 400%;
+    animation: rainbowShift 8s ease infinite;
+    padding: 6rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes rainbowShift {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-title {
+    font-family: 'Bowlby One', cursive;
+    font-size: 4rem;
+    margin-bottom: 1rem;
     font-weight: bold;
+    color: #ffffff;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 1),
+        0 0 20px rgba(255, 0, 128, 0.8),
+        0 0 30px rgba(0, 255, 128, 0.6),
+        0 0 40px rgba(128, 0, 255, 0.4);
+    animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.hero-subtitle {
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    animation: subtitleFloat 4s ease-in-out infinite;
+}
+
+@keyframes subtitleFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.meme-hero-action {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+}
+
+.meme-contract-display {
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid #ffffff;
+    border-radius: 15px;
+    padding: 1.5rem 2rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+    animation: contractGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes contractGlow {
+    from { box-shadow: 0 0 30px rgba(255, 255, 255, 0.4); }
+    to { box-shadow: 0 0 50px rgba(255, 0, 128, 0.8); }
 }
 
 .hero-features {
     display: flex;
     justify-content: center;
     gap: 3rem;
-    margin-top: 2rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
 }
 
 .feature {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 500;
+    gap: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem 1.5rem;
+    border-radius: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    animation: featureBounce 3s ease-in-out infinite;
 }
 
-.feature i {
-    font-size: 1.5rem;
+.feature:nth-child(1) { animation-delay: 0s; }
+.feature:nth-child(2) { animation-delay: 0.5s; }
+.feature:nth-child(3) { animation-delay: 1s; }
+
+@keyframes featureBounce {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
 }
 
-/* Main Content */
+.feature .feature-emoji {
+    font-size: 2rem;
+    animation: emojiSpin 4s linear infinite;
+}
+
+@keyframes emojiSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* MEME COIN Main Content */
 .main-content {
     padding: 4rem 0;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .content-grid {
@@ -351,42 +673,133 @@ body {
     gap: 4rem;
 }
 
-/* Mission & Vision */
-.mission-vision {
-    background-color: #2a2a2a;
-    padding: 3rem;
-    border-radius: 15px;
-}
-
-.mission-vision h2 {
-    color: #ff6b35;
+/* MEME COIN Section Title */
+.meme-section-title {
+    font-family: 'Bowlby One', cursive;
+    font-size: 2.5rem;
+    color: #ffffff;
+    text-align: center;
     margin-bottom: 2rem;
-    font-size: 2rem;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.8),
+        0 0 20px rgba(255, 0, 128, 0.6),
+        0 0 30px rgba(0, 255, 128, 0.4);
+    animation: sectionTitleGlow 3s ease-in-out infinite alternate;
+    position: relative;
 }
 
-.mission-block, .vision-block {
-    background-color: #333;
+@keyframes sectionTitleGlow {
+    from { 
+        text-shadow: 
+            0 0 10px rgba(255, 255, 255, 0.8),
+            0 0 20px rgba(255, 0, 128, 0.6),
+            0 0 30px rgba(0, 255, 128, 0.4);
+    }
+    to { 
+        text-shadow: 
+            0 0 20px rgba(255, 255, 255, 1),
+            0 0 30px rgba(255, 0, 128, 0.8),
+            0 0 40px rgba(0, 255, 128, 0.6);
+    }
+}
+
+.title-sparkle {
+    position: absolute;
+    top: -10px;
+    right: -30px;
+    font-size: 1.5rem;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+}
+
+/* MEME COIN Mission & Vision */
+.mission-vision.meme-mission {
+    background: linear-gradient(135deg, 
+        rgba(255, 0, 128, 0.2), 
+        rgba(0, 255, 128, 0.2), 
+        rgba(128, 0, 255, 0.2));
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(255, 0, 128, 0.3);
+    animation: missionFloat 6s ease-in-out infinite;
+}
+
+@keyframes missionFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.mission-block.meme-block, 
+.vision-block.meme-block {
+    background: linear-gradient(45deg, 
+        rgba(255, 0, 128, 0.3), 
+        rgba(0, 255, 128, 0.3));
+    border: 2px solid #ffffff;
     padding: 2rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
-.mission-block h3, .vision-block h3 {
-    color: #ff6b35;
+.mission-block.meme-block::before,
+.vision-block.meme-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: blockShine 4s linear infinite;
+}
+
+@keyframes blockShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.mission-block.meme-block h3, 
+.vision-block.meme-block h3 {
+    color: #ffffff;
+    font-family: 'Comic Neue', cursive;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255, 0, 128, 0.8);
+}
+
+.meme-mission-emoji {
+    font-size: 2rem;
+    display: inline-block;
+    margin-right: 1rem;
+    animation: emojiFloat 3s ease-in-out infinite;
+}
+
+@keyframes emojiFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(10deg); }
 }
 
 /* How It Works */
 .how-it-works {
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, #ffe066 0%, #ff9800 50%, #4caf50 100%) !important;
+    border: 3px solid #fff200;
+    box-shadow: 0 0 30px rgba(255, 152, 0, 0.15);
     padding: 3rem;
     border-radius: 15px;
 }
 
 .how-it-works h2 {
-    color: #ff6b35;
+    color: #ff9800;
     margin-bottom: 2rem;
-    font-size: 2rem;
+    font-size: 2.3rem;
+    font-family: 'Bowlby One', 'Bungee', 'Comic Neue', cursive, sans-serif;
+    text-shadow: 0 0 18px #fff200, 0 0 8px #ff9800;
 }
 
 .steps {
@@ -394,39 +807,48 @@ body {
     gap: 1.5rem;
 }
 
-.step {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background-color: #333;
-    padding: 1.5rem;
-    border-radius: 10px;
+.step, .meme-step {
+  background: linear-gradient(45deg, #fff200 0%, #ffe066 50%, #ff9800 100%) !important;
+  border: 2px solid #ff9800;
+  color: #222;
+  padding: 2rem;
+  border-radius: 15px;
+  margin-bottom: 1.2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(255, 152, 0, 0.10);
 }
-
-.step-number {
-    background-color: #ff6b35;
-    color: #ffffff;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
+.step-number, .meme-step-number {
+  background: #ff9800;
+  color: #fff;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Comic Neue', cursive;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+  text-shadow: 0 0 8px rgba(255, 152, 0, 0.7);
 }
 
 /* Interactive World Map */
 .world-map-section {
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, #ffe066 0%, #ff9800 50%, #4caf50 100%) !important;
+    border: 3px solid #fff200;
+    box-shadow: 0 0 30px rgba(255, 152, 0, 0.15);
     padding: 3rem;
     border-radius: 15px;
 }
 
 .world-map-section h2 {
-    color: #ff6b35;
-    margin-bottom: 1rem;
-    font-size: 2rem;
+    font-family: 'Bowlby One', 'Bungee', 'Comic Neue', cursive, sans-serif;
+    font-size: 2.3rem;
+    color: #ff9800;
+    text-shadow: 0 0 18px #fff200, 0 0 8px #ff9800;
+    margin-bottom: 2rem;
 }
 
 .map-description {
@@ -538,15 +960,15 @@ body {
 }
 
 .legend-color.active {
-    background-color: #4CAF50;
+    background-color: #4CAF50 !important;
 }
 
 .legend-color.progress {
-    background-color: #ff9800;
+    background-color: #FFE066 !important;
 }
 
 .legend-color.planned {
-    background-color: #757575;
+    background-color: #FF9800 !important;
 }
 
 /* Custom Map Markers */
@@ -828,61 +1250,268 @@ body {
     justify-content: center;
 }
 
-/* Stories & Testimonials */
-.stories-testimonials {
+/* MEME COIN Stories & Testimonials */
+.stories-testimonials.meme-testimonials {
     padding: 4rem 0;
-    background-color: #2a2a2a;
+    background: linear-gradient(135deg, 
+        rgba(255, 0, 128, 0.2), 
+        rgba(0, 255, 128, 0.2), 
+        rgba(128, 0, 255, 0.2));
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    margin: 2rem 0;
+    box-shadow: 0 0 40px rgba(255, 0, 128, 0.4);
 }
 
-.stories-testimonials h2 {
-    text-align: center;
-    color: #ff6b35;
-    margin-bottom: 3rem;
-    font-size: 2.5rem;
-}
-
-.testimonials-grid {
+.testimonials-grid.meme-testimonials-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
 }
 
-.testimonial {
-    background-color: #333;
-    padding: 2rem;
-    border-radius: 15px;
-    border-left: 4px solid #ff6b35;
+.testimonial.meme-testimonial {
+    background: linear-gradient(45deg, 
+        rgba(255, 0, 128, 0.3), 
+        rgba(0, 255, 128, 0.3), 
+        rgba(128, 0, 255, 0.3));
+    border: 2px solid #ffffff;
+    padding: 2.5rem;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: testimonialFloat 4s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.testimonial.meme-testimonial:nth-child(1) { animation-delay: 0s; }
+.testimonial.meme-testimonial:nth-child(2) { animation-delay: 1s; }
+.testimonial.meme-testimonial:nth-child(3) { animation-delay: 2s; }
+
+@keyframes testimonialFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+}
+
+.testimonial-emoji {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    animation: emojiPulse 2s ease-in-out infinite;
+}
+
+@keyframes emojiPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.testimonial.meme-testimonial p {
+    color: #ffffff;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .testimonial-author {
     margin-top: 1rem;
-    color: #ff6b35;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 0, 128, 0.8);
+    text-align: center;
 }
 
-/* Footer */
-.footer {
-    background-color: #1a1a1a;
+.author-badge {
+    background: linear-gradient(45deg, #ff0080, #00ff80);
+    color: #ffffff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    text-shadow: none;
+    animation: badgePulse 3s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 128, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(0, 255, 128, 0.8); }
+}
+
+.testimonial-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: glowSweep 6s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes glowSweep {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* MEME COIN Footer */
+.footer.meme-footer {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a1a2a 25%, #1a2a1a 50%, #2a2a1a 75%, #1a1a1a 100%);
+    background-size: 300% 300%;
+    animation: footerGradient 10s ease infinite;
     padding: 3rem 0 1rem;
-    border-top: 1px solid #333;
+    border-top: 3px solid #ffffff;
+    box-shadow: 0 -4px 20px rgba(255, 0, 128, 0.4);
 }
 
-.footer-content {
+@keyframes footerGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.footer-content.meme-footer-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 3rem;
 }
 
-.footer-brand {
+.footer-brand.meme-footer-brand {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #ff6b35;
+    text-align: center;
 }
 
-.footer-brand i {
-    margin-right: 10px;
-    font-size: 2rem;
+.footer-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    margin-bottom: 1rem;
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.footer-brand-text {
+    font-family: 'Bungee', cursive;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 0, 128, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.footer-tagline {
+    font-family: 'Comic Neue', cursive;
+    font-size: 1rem;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 255, 128, 0.6);
+    animation: taglineGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes taglineGlow {
+    from { color: #ffffff; }
+    to { color: #00ff80; }
+}
+
+.footer-links.meme-footer-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.footer-section h4 {
+    font-family: 'Comic Neue', cursive;
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255, 0, 128, 0.6);
+}
+
+.footer-link {
+    display: flex;
+    align-items: center;
+    color: #ccc;
+    text-decoration: none;
+    margin-bottom: 0.8rem;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.footer-link:hover {
+    color: #ffffff;
+    background: rgba(255, 0, 128, 0.2);
+    transform: translateX(5px);
+}
+
+.footer-contract {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 2px solid #00ff80;
+}
+
+.contract-mini {
+    font-family: 'Courier New', monospace;
+    color: #00ff80;
+    font-size: 0.9rem;
+    text-shadow: 0 0 10px rgba(0, 255, 128, 0.5);
+}
+
+.copy-mini-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.copy-mini-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.footer-bottom.meme-footer-bottom {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-family: 'Comic Neue', cursive;
+    position: relative;
+}
+
+.footer-emojis {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.footer-emoji {
+    font-size: 1.5rem;
+    animation: emojiDance 3s ease-in-out infinite;
+}
+
+.footer-emoji:nth-child(1) { animation-delay: 0s; }
+.footer-emoji:nth-child(2) { animation-delay: 0.5s; }
+.footer-emoji:nth-child(3) { animation-delay: 1s; }
+.footer-emoji:nth-child(4) { animation-delay: 1.5s; }
+
+@keyframes emojiDance {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.2) rotate(10deg); }
+    50% { transform: scale(0.9) rotate(-10deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
 }
 
 .footer-links {
@@ -2076,6 +2705,7 @@ body {
 .edit-popup-form input[type="number"]::-webkit-outer-spin-button,
 .edit-popup-form input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
+    appearance: none;
     margin: 0;
 }
 
@@ -2135,3 +2765,112 @@ body {
         flex-direction: column;
     }
 } 
+
+/* NFT Showcase Styles */
+.nft-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.nft-card {
+  background: linear-gradient(135deg, #ffe066 0%, #ff9800 50%, #4caf50 100%);
+  border: 2px solid #fff200;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.15);
+  overflow: hidden;
+  transition: transform 0.2s;
+  text-align: center;
+}
+.nft-card:hover {
+  transform: scale(1.04) rotate(-2deg);
+  box-shadow: 0 8px 32px rgba(255, 152, 0, 0.25);
+}
+.nft-image-wrapper {
+  padding: 1.2rem 1.2rem 0.5rem 1.2rem;
+  background: linear-gradient(135deg, #fff200 0%, #ffe066 100%);
+  border-bottom: 2px solid #ff9800;
+}
+.nft-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(255, 152, 0, 0.15);
+  background: #fffbe6;
+  margin: 0 auto;
+  display: block;
+}
+.nft-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 152, 0, 0.9);
+  color: #fff;
+  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
+}
+.nft-info h3 {
+  color: #3a2c00;
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0.2rem 0;
+  font-weight: bold;
+  text-shadow: 0 1px 4px #ffe06644;
+}
+.nft-info p {
+  color: #43a047;
+  font-size: 0.95rem;
+  margin-bottom: 0.7rem;
+}
+
+/* Pizza color theme for main backgrounds */
+body, .hero, .main-content, .footer.meme-footer {
+  background: linear-gradient(135deg, #ffe066 0%, #ff9800 50%, #4caf50 100%) !important;
+  background-size: 400% 400%;
+}
+
+/* Section backgrounds */
+.mission-vision.meme-mission, .how-it-works, .world-map-section {
+  background: linear-gradient(135deg, #ffe066 0%, #ff9800 50%, #4caf50 100%) !important;
+  border: 3px solid #fff200;
+  box-shadow: 0 0 30px rgba(255, 152, 0, 0.15);
+}
+.mission-block.meme-block, .vision-block.meme-block, .how-it-works, .world-map-section {
+  background: linear-gradient(45deg, #fff200 0%, #ffe066 50%, #ff9800 100%) !important;
+  border: 2px solid #ff9800;
+  color: #222;
+}
+
+/* Update buttons to pizza colors */
+.btn-primary, .meme-btn {
+  background: linear-gradient(90deg, #ff9800 0%, #ffe066 100%) !important;
+  color: #222 !important;
+  border-color: #ff9800 !important;
+}
+.btn-primary:hover, .meme-btn:hover {
+  background: linear-gradient(90deg, #ffe066 0%, #ff9800 100%) !important;
+  color: #222 !important;
+}
+
+/* Add more pizza color to map legend */
+.legend-color.active { background-color: #4caf50 !important; }
+.legend-color.progress { background-color: #ffe066 !important; }
+.legend-color.planned { background-color: #ff9800 !important; }
+
+/* Unify header donate and join buttons size */
+.header .btn,
+.header .btn-primary.meme-btn {
+  padding: 0.85rem 2.2rem;
+  font-size: 1.1rem;
+  min-width: 220px;
+  border-radius: 12px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+</rewritten_file> 
