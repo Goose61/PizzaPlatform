@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍕 PIZZA COIN - Register</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Bowlby+One&family=Bungee&display=swap" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--pizza-bg-gradient);
+        }
+        .register-container {
+            background: var(--pizza-section-bg);
+            border: 2px solid var(--pizza-main);
+            border-radius: 20px;
+            box-shadow: 0 0 32px #f74e5155, 0 0 12px #ffe06655;
+            padding: 2.5rem 2rem 2rem 2rem;
+            max-width: 400px;
+            width: 100%;
+            margin: 3rem 0 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .register-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 18px #ffe06699;
+        }
+        .register-title {
+            font-family: 'Bowlby One', cursive;
+            font-size: 2rem;
+            color: var(--pizza-cheese);
+            text-shadow: 0 0 18px #ffe066cc, 0 0 8px #f74e51, 0 0 2px #fff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .register-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .form-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .register-form label {
+            align-self: flex-start;
+            margin-left: 8px;
+        }
+        .register-form input {
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .register-btn {
+            width: 100%;
+        }
+        .register-links {
+            margin-top: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .register-links a {
+            color: var(--pizza-main);
+            font-size: 0.98rem;
+            text-decoration: none;
+            font-family: 'Comic Neue', cursive;
+            transition: color 0.2s;
+        }
+        .register-links a:hover {
+            color: var(--pizza-cheese);
+        }
+        @media (max-width: 600px) {
+            .register-container {
+                padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+            }
+            .register-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <img src="pizzaimages/main_logo.png" alt="Pizza Logo" class="register-logo">
+        <div class="register-title">🍕 Register 🍕</div>
+        <form class="register-form" id="registerForm" method="POST" action="/register">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':\"\\|,.<>/?]).{8,}$"
+                    title="Password must be at least 8 characters, include uppercase, lowercase, number, and special character.">
+                <small>Password must be at least 8 characters, include uppercase, lowercase, number, and special character.</small>
+            </div>
+            <!-- Placeholder for 2FA setup (to be implemented after registration) -->
+            <!-- <div id="2fa-setup" style="display:none;">
+                <label for="2fa">2FA Code (from Google Authenticator):</label>
+                <input type="text" id="2fa" name="2fa">
+            </div> -->
+            <button type="submit" class="btn btn-primary meme-btn register-btn"><i class="fas fa-user-plus"></i> Register</button>
+        </form>
+        <div class="register-links">
+            <a href="user-login.html">Already have an account? Login</a>
+            <a href="user-reset.html">Forgot password?</a>
+            <a href="index.html">&larr; Back to Home</a>
+        </div>
+    </div>
+    <script>
+// Redirect to dashboard after registration (placeholder for real registration logic)
+document.getElementById('registerForm').onsubmit = function(e) {
+    e.preventDefault();
+    window.location.href = 'user-dashboard.html';
+};
+</script>
+</body>
+</html> 

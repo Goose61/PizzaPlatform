@@ -1,0 +1,134 @@
+$PIZZA SPL Token Exchange – Blueprint & Implementation Guide
+
+1. Project Recap & Clarifications
+What We’re Building
+A secure, web-based Solana SPL token exchange for $PIZZA, used as a payment, loyalty, and governance token within a pizza-focused ecosystem.
+Users create accounts, receive custodial wallets, and buy $PIZZA with fiat (via Stripe).
+$PIZZA tokens are non-withdrawable to fiat; they can only be spent at partner restaurants, used for gift cards, or for loyalty/governance.
+Gift cards are QR-based, unique per restaurant, and can be shared or donated. They expire 72h after redemption if unused.
+Restaurants are vetted and onboarded by the team, receive a fixed 10% commission, and can issue gift cards.
+All wallet keys are managed securely (KMS/HSM), and the system is designed for compliance and security.
+Governance is handled by a DAO/multisig over the SPL token mint authority and smart contract upgrades.
+User onboarding includes email verification and optional 2FA. KYC/AML is handled in-house for cost efficiency.
+Loyalty points are awarded for spending $PIZZA at partners (e.g., 5 points per 100 tokens spent).
+Unclear/To Be Decided
+DAO/multisig tool choice (Squads, Realms, Goki, etc.)
+KMS/HSM provider (AWS, GCP, Azure, or on-prem)
+Loyalty points: on-chain (as a token) or off-chain (backend DB)?
+Smart contract upgradability: immutable or upgradable?
+Any regions to block for compliance?
+Analytics/reporting needs for partners?
+Disaster recovery plan details.
+
+
+
+2. System Architecture Overview
+
+Main Components:
+Frontend: User dashboard, partner dashboard, gift card redemption, onboarding.
+Backend: User management, wallet/key management, KYC/AML, Stripe integration, token minting, gift card logic, loyalty engine, governance interface.
+Solana Blockchain: SPL token mint, token accounts, smart contracts (gift card, loyalty, governance).
+Security: KMS/HSM for key storage, 2FA, email verification, regular audits.
+DAO/Multisig: Controls mint authority, upgrades, and treasury.
+
+
+
+3. Implementation Steps
+
+A. Token & Smart Contract Setup
+Create SPL Token ($PIZZA_SPL)
+Use Solana CLI or SDK to create a new mint with 1B supply, 9 decimals.
+Set mint authority to a DAO/multisig wallet.
+Reference: Solana Create Mint
+Deploy Smart Contracts
+Gift card logic (expiry, redemption, partner ID encoding).
+Loyalty points (if on-chain).
+Governance (DAO/multisig, voting, upgrades).
+Ensure contracts are audited before mainnet launch.
+
+B. Backend Development
+User Account System
+Registration with email verification.
+Optional 2FA (TOTP apps like Google Authenticator).
+Password reset via secure email link.
+Custodial Wallet Management
+Generate a new Solana keypair for each user (do not allow import).
+Store private keys in a secure KMS/HSM.
+Allow users to export their private key (with strong warnings).
+Stripe Fiat Onramp
+Integrate Stripe for fiat payments.
+On successful payment, trigger KYC/AML check.
+If KYC passes, mint $PIZZA_SPL to user’s token account.
+KYC/AML
+Implement tiered KYC (basic for small, enhanced for large purchases).
+Store KYC data securely, comply with privacy laws.
+Gift Card System
+Allow partners to create gift cards (QR code with URL: /redeem?pid=XXXX&amount=YY&code=UNIQUE).
+On redemption, transfer tokens to user, start 72h expiry timer.
+If not used in 72h, reclaim tokens to ecosystem reserve.
+Loyalty Engine
+Award points for spending (e.g., 5 per 100 tokens).
+Decide if points are on-chain (SPL token) or off-chain (DB).
+Partner Onboarding
+Manual vetting and approval.
+Partner dashboard for gift card creation, sales tracking, commission payout.
+Governance Interface
+DAO/multisig dashboard for proposals, voting, and upgrades.
+
+C. Frontend Development
+User Dashboard
+Balance, transaction history, buy $PIZZA, redeem gift cards, view loyalty points.
+Partner Dashboard
+Gift card creation, redemption stats, commission overview.
+Gift Card Redemption Page
+Scan QR or enter code, redeem instantly.
+Admin Dashboard
+User/partner management, KYC review, system analytics.
+
+D. Security & Compliance
+Key Management
+Use KMS/HSM for all private key operations.
+Encrypt all sensitive data at rest and in transit.
+Regularly rotate keys and audit access.
+Auditing
+Third-party smart contract audit.
+Regular backend code and access log reviews.
+Compliance
+Block restricted regions as needed.
+Maintain KYC/AML logs for regulatory review.
+Disaster Recovery
+Regular encrypted backups of DB and key material.
+Documented recovery procedures.
+
+
+
+4. Sample User Flow
+User registers → verifies email → (optionally) sets up 2FA.
+User buys $PIZZA with fiat (Stripe) → completes KYC.
+Backend mints $PIZZA_SPL to user’s custodial wallet.
+User spends $PIZZA at partners, earns loyalty points.
+User or partner creates gift card (QR code), shares it.
+Gift card is redeemed, tokens transferred, 72h expiry timer starts.
+If unused, tokens are reclaimed to ecosystem.
+DAO/multisig governs upgrades, treasury, and mint authority.
+
+
+
+5. Security; Best Practices
+Never store raw private keys in your DB; always use KMS/HSM.
+Use HTTPS everywhere.
+Enforce strong password and 2FA policies.
+Audit all smart contracts before launch.
+Regularly review backend and key access logs.
+Educate users about risks of exporting private keys.
+
+
+
+6. Open Questions
+Which DAO/multisig tool do we use?
+Loyalty points: on-chain or off-chain?
+Preferred KMS/HSM provider?
+Smart contract upgradability: yes/no?
+Any regions to block for compliance?
+What analytics/reporting do partners need?
+Any additional disaster recovery requirements?
