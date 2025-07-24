@@ -59,7 +59,7 @@ if (missingEnvVars.length > 0) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 7000;
 
 // Security configuration from environment - NO FALLBACKS
 const SECURITY_CONFIG = {
@@ -138,11 +138,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
+      scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com", "https://maps.googleapis.com", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
       frameSrc: ["https://www.google.com"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'", "https://maps.googleapis.com", "https://www.google.com"]
     }
   },
   hsts: {
@@ -158,7 +160,9 @@ app.use(cors({
       'http://localhost:3001',
       'http://127.0.0.1:3001',
       'http://localhost:5500',
-      'http://127.0.0.1:5500'
+      'http://127.0.0.1:5500',
+      'http://localhost:7000',
+      'http://127.0.0.1:7000'
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -897,6 +901,19 @@ app.use('/api/business', businessRoutes);
 // Serve static files from frontend directory
 app.use(express.static(path.join(__dirname, '../../frontend/public')));
 app.use('/src', express.static(path.join(__dirname, '../../frontend/src')));
+
+// Map pizzaimages to the actual image directory
+app.use('/pizzaimages', express.static(path.join(__dirname, '../../frontend/src/assets/images/pizzaimages')));
+
+// Serve x.jpg directly from images directory
+app.get('/x.jpg', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/src/assets/images/x.jpg'));
+});
+
+// Handle favicon.ico
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
 
 // Initialize server
 async function startServer() {
