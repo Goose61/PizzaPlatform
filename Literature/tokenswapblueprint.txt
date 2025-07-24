@@ -1,134 +1,269 @@
-$PIZZA SPL Token Exchange – Blueprint & Implementation Guide
+I. Core Technical Architecture
+Blockchain Foundation
 
-1. Project Recap & Clarifications
-What We’re Building
-A secure, web-based Solana SPL token exchange for $PIZZA, used as a payment, loyalty, and governance token within a pizza-focused ecosystem.
-Users create accounts, receive custodial wallets, and buy $PIZZA with fiat (via Stripe).
-$PIZZA tokens are non-withdrawable to fiat; they can only be spent at partner restaurants, used for gift cards, or for loyalty/governance.
-Gift cards are QR-based, unique per restaurant, and can be shared or donated. They expire 72h after redemption if unused.
-Restaurants are vetted and onboarded by the team, receive a fixed 10% commission, and can issue gift cards.
-All wallet keys are managed securely (KMS/HSM), and the system is designed for compliance and security.
-Governance is handled by a DAO/multisig over the SPL token mint authority and smart contract upgrades.
-User onboarding includes email verification and optional 2FA. KYC/AML is handled in-house for cost efficiency.
-Loyalty points are awarded for spending $PIZZA at partners (e.g., 5 points per 100 tokens spent).
-Unclear/To Be Decided
-DAO/multisig tool choice (Squads, Realms, Goki, etc.)
-KMS/HSM provider (AWS, GCP, Azure, or on-prem)
-Loyalty points: on-chain (as a token) or off-chain (backend DB)?
-Smart contract upgradability: immutable or upgradable?
-Any regions to block for compliance?
-Analytics/reporting needs for partners?
-Disaster recovery plan details.
+    Network: Solana Mainnet (Token-2022 Program)
 
+    Key Contracts:
 
+        SPL Mint: Non-transferable token with transfer hooks, auto-expiry (24mo)
 
-2. System Architecture Overview
+        Loyalty Vaults: Business-specific reward pools (Rust program)
 
-Main Components:
-Frontend: User dashboard, partner dashboard, gift card redemption, onboarding.
-Backend: User management, wallet/key management, KYC/AML, Stripe integration, token minting, gift card logic, loyalty engine, governance interface.
-Solana Blockchain: SPL token mint, token accounts, smart contracts (gift card, loyalty, governance).
-Security: KMS/HSM for key storage, 2FA, email verification, regular audits.
-DAO/Multisig: Controls mint authority, upgrades, and treasury.
+        Staking Engine: Time-locked $PIZZA staking with SPL yield distribution
 
+        Governance DAO: Squads multisig (5/7) controlling mint authority
 
+Off-Chain Components
+Diagram
+Code
 
-3. Implementation Steps
+graph TB
+  A[User Frontend] --> B[Backend API]
+  B --> C[KMS/HSM]
+  C --> D[Solana RPC]
+  B --> E[Stripe/Circle]
+  F[Business Dashboard] --> G[Analytics Engine]
+  G --> H[PostgreSQL]
+  D --> I[SPL Token]
+  I --> J[Loyalty Vaults]
 
-A. Token & Smart Contract Setup
-Create SPL Token ($PIZZA_SPL)
-Use Solana CLI or SDK to create a new mint with 1B supply, 9 decimals.
-Set mint authority to a DAO/multisig wallet.
-Reference: Solana Create Mint
-Deploy Smart Contracts
-Gift card logic (expiry, redemption, partner ID encoding).
-Loyalty points (if on-chain).
-Governance (DAO/multisig, voting, upgrades).
-Ensure contracts are audited before mainnet launch.
+II. Token Specifications
+$PIZZA Token (SPL)
 
-B. Backend Development
-User Account System
-Registration with email verification.
-Optional 2FA (TOTP apps like Google Authenticator).
-Password reset via secure email link.
-Custodial Wallet Management
-Generate a new Solana keypair for each user (do not allow import).
-Store private keys in a secure KMS/HSM.
-Allow users to export their private key (with strong warnings).
-Stripe Fiat Onramp
-Integrate Stripe for fiat payments.
-On successful payment, trigger KYC/AML check.
-If KYC passes, mint $PIZZA_SPL to user’s token account.
-KYC/AML
-Implement tiered KYC (basic for small, enhanced for large purchases).
-Store KYC data securely, comply with privacy laws.
-Gift Card System
-Allow partners to create gift cards (QR code with URL: /redeem?pid=XXXX&amount=YY&code=UNIQUE).
-On redemption, transfer tokens to user, start 72h expiry timer.
-If not used in 72h, reclaim tokens to ecosystem reserve.
-Loyalty Engine
-Award points for spending (e.g., 5 per 100 tokens).
-Decide if points are on-chain (SPL token) or off-chain (DB).
-Partner Onboarding
-Manual vetting and approval.
-Partner dashboard for gift card creation, sales tracking, commission payout.
-Governance Interface
-DAO/multisig dashboard for proposals, voting, and upgrades.
+    Mint Authority: DAO Multisig
 
-C. Frontend Development
-User Dashboard
-Balance, transaction history, buy $PIZZA, redeem gift cards, view loyalty points.
-Partner Dashboard
-Gift card creation, redemption stats, commission overview.
-Gift Card Redemption Page
-Scan QR or enter code, redeem instantly.
-Admin Dashboard
-User/partner management, KYC review, system analytics.
+    Supply: 1B (fixed)
 
-D. Security & Compliance
-Key Management
-Use KMS/HSM for all private key operations.
-Encrypt all sensitive data at rest and in transit.
-Regularly rotate keys and audit access.
-Auditing
-Third-party smart contract audit.
-Regular backend code and access log reviews.
-Compliance
-Block restricted regions as needed.
-Maintain KYC/AML logs for regulatory review.
-Disaster Recovery
-Regular encrypted backups of DB and key material.
-Documented recovery procedures.
+    Decimals: 6
 
+    Metadata:
+    json
 
+    {
+      "name": "PIZZA",
+      "symbol": "PIZZA",
+      "uri": "https://metadata.pizza/token.json",
+      "extensions": []
+    }
 
-4. Sample User Flow
-User registers → verifies email → (optionally) sets up 2FA.
-User buys $PIZZA with fiat (Stripe) → completes KYC.
-Backend mints $PIZZA_SPL to user’s custodial wallet.
-User spends $PIZZA at partners, earns loyalty points.
-User or partner creates gift card (QR code), shares it.
-Gift card is redeemed, tokens transferred, 72h expiry timer starts.
-If unused, tokens are reclaimed to ecosystem.
-DAO/multisig governs upgrades, treasury, and mint authority.
+SPL Utility Token (Token-2022)
 
+    Peg: 1 token = $0.01 USD
 
+    Extensions:
 
-5. Security; Best Practices
-Never store raw private keys in your DB; always use KMS/HSM.
-Use HTTPS everywhere.
-Enforce strong password and 2FA policies.
-Audit all smart contracts before launch.
-Regularly review backend and key access logs.
-Educate users about risks of exporting private keys.
+        TransferHook (blocks non-whitelisted transfers)
 
+        NonTransferable
 
+        Expiry (epoch-based auto-burn)
 
-6. Open Questions
-Which DAO/multisig tool do we use?
-Loyalty points: on-chain or off-chain?
-Preferred KMS/HSM provider?
-Smart contract upgradability: yes/no?
-Any regions to block for compliance?
-What analytics/reporting do partners need?
-Any additional disaster recovery requirements?
+    Mint Logic:
+    rust
+
+    fn mint_spl(user: Pubkey, amount: u64) {
+        require!(kyc_verified(user), "KYC required");
+        require!(usdc_reserves >= amount * 0.01, "Insufficient reserves");
+        token_2022::mint_to(user, amount);
+    }
+
+III. Critical Systems
+1. Payment Flow (QR-Based)
+Diagram
+Code
+
+sequenceDiagram
+  Customer->>POS Device: Scan QR
+  POS Device->>Backend: Validate QR (PDA signature)
+  Backend->>Solana: Initiate SPL Transfer (CPI)
+  Solana->>Customer Wallet: Debit SPL
+  Solana->>Business Wallet: Credit SPL
+  Business Wallet->>Overnight Engine: Batch conversion request
+  Overnight Engine->>Jupiter: Swap SPL→USDC
+  Jupiter->>Circle: Redeem USDC→USD
+  Circle->>Business Bank: Wire USD
+
+2. Loyalty Vault Contract
+
+    Storage:
+    rust
+
+pub struct BusinessVault {
+    pub owner: Pubkey,      // Business wallet
+    pub total_deposits: u64,
+    pub reward_rules: RewardRule, // JSON: { "1000": 100, "5000": 600 }
+    pub last_reset: i64     // Epoch timestamp
+}
+
+Reward Distribution:
+rust
+
+    fn distribute_rewards(user: Pubkey, amount: u64) {
+        let bonus = vault.reward_rules.get(amount).unwrap_or(0);
+        if vault.total_deposits >= bonus {
+            token_2022::transfer(vault.address, user, bonus);
+        } else {
+            queue_lottery_ticket(user);
+        }
+    }
+
+3. Staking Mechanism
+
+    Staking Contract State:
+    rust
+
+pub struct StakeAccount {
+    pub owner: Pubkey,
+    pub amount: u64,
+    pub lock_period: i64,   // 30/90/180 days
+    pub rewards_earned: u64,
+    pub last_claim: i64
+}
+
+Reward Calculation:
+python
+
+    def calculate_rewards(account):
+        seconds_staked = current_epoch() - account.last_claim
+        apr = 0.10 if account.lock_period >= 90 else 0.05
+        return account.amount * apr * (seconds_staked / 31_536_000)  # SECS_PER_YEAR
+
+IV. Integration Specifications
+POS Requirements
+Component	Specification
+Hardware	Any iOS/Android device with camera
+QR Standard	ISO/IEC 18004 (with encrypted payload)
+Connection	Internet required (fallback: offline mode)
+API Endpoint	POST /api/v1/verify-payment (JWT auth)
+Off-Chain Services
+Diagram
+Code
+
+graph LR
+  A[KYC Service] -->|Synapse API| B[Backend]
+  C[Fiat Onramp] -->|Stripe Connect| B
+  D[Analytics] -->|TimescaleDB| E[Dashboard]
+  F[Key Management] -->|AWS KMS| G[HSM]
+
+V. Security Protocols
+Smart Contract Safeguards
+
+    Transfer Hooks:
+    rust
+
+    fn pre_transfer_hook(source: Pubkey, dest: Pubkey) -> Result<()> {
+        require!(whitelist.contains(dest), "Unauthorized recipient");
+        Ok(())
+    }
+
+    Vault Withdrawal Limits:
+
+        Max 20% of daily SPL earnings convertible to fiat
+
+    Multisig Upgrades:
+
+        Contract upgrades require 5/7 DAO signatures
+
+Infrastructure Security
+
+    HSM: AWS CloudHSM (FIPS 140-2 Level 3) for key storage
+
+    Encryption: AES-256 for data at rest, TLS 1.3 for transit
+
+    Audits: Quarterly third-party audits (e.g., Ottersec)
+
+VI. Compliance Implementation
+SPL Token Classification
+Regulatory Risk	Mitigation
+Security	Non-transferable → not investment contract
+Money Transmission	Partner with Circle (MSB license)
+Tax Reporting	IRS Form 1099-MISC auto-generation
+Data Handling
+
+    KYC: Tiered verification (Synapse):
+
+        Tier 1: <$1k/day → Email/phone
+
+        Tier 2: >$1k/day → ID + liveness check
+
+    Privacy: Zero-knowledge proofs for loyalty analytics
+
+VII. Deployment Roadmap
+
+Phase 1: MVP (Testnet)
+
+    Deploy SPL Token-2022 with transfer hooks
+
+    Build QR redemption backend (Node.js + Anchor)
+
+    Integrate Stripe <> Solana SPL minting
+
+Phase 2: Pilot (Mainnet)
+
+    Launch with 3 Chicago pizzerias
+
+    Deploy Loyalty Vault contracts
+
+    Implement DAO governance (Squads)
+
+Phase 3: Scale
+
+    Onboard suppliers (SPL for ingredients)
+
+    Roll out wPIZZA cross-chain bridges
+
+    Achieve 100k+ SPL daily transactions
+
+VIII. Monitoring & Metrics
+Key Dashboards
+Diagram
+Code
+
+graph TD
+  A[Grafana] --> B[SPL Velocity]
+  A --> C[Stability Pool Reserve]
+  A --> D[Vault APY]
+  E[Prometheus] --> F[TPS]
+  E --> G[Contract Error Rates]
+
+Alert Thresholds
+
+    SPL reserves < 110% → PagerDuty critical
+
+    Vault APY < 5% → Slack notification
+
+    TX latency > 500ms → Auto-scaling trigger
+
+IX. Repository Structure
+text
+
+/pizza-ecosystem
+├── programs
+│   ├── spl_token (custom fork)
+│   ├── loyalty_vaults
+│   └── staking
+├── frontend (Next.js)
+├── backend (Rust + Actix)
+├── hsm (AWS KMS integration)
+└── audits
+    ├── ottersec-2024-07.pdf
+    └── certik-2024-09.pdf
+
+X. Getting Started
+
+    Clone Repo:
+    bash
+
+git clone https://github.com/pizza-ecosystem/core-contracts
+anchor build
+
+Deploy to Devnet:
+bash
+
+anchor deploy --provider.cluster devnet \
+  --program-id VAuLT... 
+
+Test Payment Flow:
+ts
+
+await PizzaPOS.scanQR(qr, wallet); // See /examples

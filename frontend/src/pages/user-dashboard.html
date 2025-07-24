@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍕 PIZZA COIN User Dashboard 🚀</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&family=Bowlby+One&family=Bungee&display=swap" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <style>
+        :root {
+            --pizza-main: #f74e51;
+            --pizza-main-dark: #c43a3c;
+            --pizza-main-light: #ff7a7c;
+            --pizza-accent: #fff0f0;
+            --pizza-cheese: #ffe066;
+            --pizza-bg-gradient: linear-gradient(45deg, #f74e51, #ff7a7c, #c43a3c, #f74e51);
+            --pizza-btn-gradient: linear-gradient(90deg, #f74e51 0%, #ff7a7c 100%);
+            --pizza-btn-gradient-hover: linear-gradient(90deg, #ff7a7c 0%, #f74e51 100%);
+            --pizza-section-bg: linear-gradient(135deg, #f74e51 0%, #ff7a7c 50%, #c43a3c 100%) !important;
+            --pizza-border: #fff0f0;
+        }
+        body {
+            background: var(--pizza-bg-gradient);
+            font-family: 'Comic Neue', cursive;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            background: var(--pizza-main-dark);
+            color: #fff;
+            width: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem 1rem 1rem;
+            box-shadow: 2px 0 16px #f74e5155;
+        }
+        .sidebar-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 18px #ffe06699;
+        }
+        .sidebar-title {
+            font-family: 'Bowlby One', cursive;
+            font-size: 1.5rem;
+            color: var(--pizza-cheese);
+            text-shadow: 0 0 12px #ffe066cc, 0 0 4px #f74e51;
+            margin-bottom: 2rem;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            width: 100%;
+        }
+        .sidebar-nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar-nav a.active, .sidebar-nav a:hover {
+            background: var(--pizza-main-light);
+            color: var(--pizza-main);
+        }
+        .sidebar-bottom {
+            margin-top: auto;
+            font-size: 0.95rem;
+            color: #ffe066;
+            text-align: center;
+        }
+        .dashboard-content {
+            flex: 1;
+            padding: 2.5rem 2rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .dashboard-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .dashboard-header .user-info .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid var(--pizza-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .dashboard-header .logout-btn {
+            background: var(--pizza-btn-gradient);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Bowlby One', cursive;
+            box-shadow: 0 0 8px #f74e5155;
+            transition: background 0.2s;
+        }
+        .dashboard-header .logout-btn:hover {
+            background: var(--pizza-btn-gradient-hover);
+        }
+        .dashboard-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .dashboard-card {
+            background: var(--pizza-section-bg);
+            border-radius: 18px;
+            box-shadow: 0 0 18px #f74e5155, 0 0 8px #ffe06655;
+            padding: 2rem 2.5rem;
+            flex: 1 1 320px;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .balance-amount {
+            font-size: 2.8rem;
+            font-family: 'Bowlby One', cursive;
+            color: var(--pizza-cheese);
+            text-shadow: 0 0 18px #ffe066cc, 0 0 8px #f74e51;
+            margin: 1.2rem 0 0.5rem 0;
+        }
+        .token-symbol {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-left: 0.5rem;
+        }
+        .pizza-progress {
+            width: 100%;
+            height: 18px;
+            background: #fff0f0;
+            border-radius: 9px;
+            margin: 1rem 0 0.5rem 0;
+            overflow: hidden;
+            box-shadow: 0 0 8px #ffe06655;
+        }
+        .pizza-progress-bar {
+            height: 100%;
+            background: var(--pizza-btn-gradient);
+            width: 70%;
+            border-radius: 9px 0 0 9px;
+            transition: width 0.7s cubic-bezier(.4,2,.6,1);
+        }
+        .balance-actions {
+            margin-top: 1.2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .dashboard-card h2 {
+            color: var(--pizza-cheese);
+            text-shadow: 0 0 12px #ffe066cc, 0 0 6px #f74e51;
+            font-size: 1.4rem;
+            margin-bottom: 0.7rem;
+        }
+        .transaction-list {
+            width: 100%;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .transaction-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff0f0;
+            color: #222;
+            border-radius: 8px;
+            margin-bottom: 0.7rem;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.05rem;
+            box-shadow: 0 0 6px #f74e5122;
+            transition: transform 0.1s;
+        }
+        .transaction-list li:hover {
+            transform: scale(1.03);
+            background: #ffe06633;
+        }
+        .tx-icon {
+            font-size: 1.3rem;
+            margin-right: 0.7rem;
+            color: var(--pizza-main);
+        }
+        .tx-date {
+            font-size: 0.95rem;
+            color: #888;
+        }
+        .security-options {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .security-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff0f0;
+            color: #222;
+            border-radius: 8px;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.05rem;
+            box-shadow: 0 0 6px #f74e5122;
+        }
+        .security-item button {
+            background: var(--pizza-btn-gradient);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Bowlby One', cursive;
+            box-shadow: 0 0 8px #f74e5155;
+            transition: background 0.2s;
+        }
+        .security-item button:hover {
+            background: var(--pizza-btn-gradient-hover);
+        }
+        /* Modal */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: var(--pizza-section-bg);
+            border-radius: 18px;
+            box-shadow: 0 0 18px #f74e5155, 0 0 8px #ffe06655;
+            padding: 2rem 2.5rem;
+            min-width: 320px;
+            color: #fff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            color: #fff;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-modal:hover {
+            color: var(--pizza-cheese);
+        }
+        @media (max-width: 900px) {
+            .dashboard-wrapper {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex-direction: row;
+                width: 100vw;
+                min-height: unset;
+                height: 80px;
+                padding: 1rem 0.5rem;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 2px 16px #f74e5155;
+            }
+            .sidebar-title, .sidebar-bottom {
+                display: none;
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                gap: 1.2rem;
+                width: auto;
+            }
+        }
+        @media (max-width: 600px) {
+            .dashboard-content {
+                padding: 1rem 0.2rem;
+            }
+            .dashboard-card {
+                padding: 1.2rem 0.7rem;
+                min-width: unset;
+            }
+            .modal-content {
+                padding: 1.2rem 0.7rem;
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- After successful login or registration, redirect to this dashboard page -->
+<div class="dashboard-wrapper">
+    <aside class="sidebar">
+        <img src="pizzaimages/main_logo.png" alt="Pizza Logo" class="sidebar-logo">
+        <div class="sidebar-title">PIZZA DASHBOARD</div>
+        <nav class="sidebar-nav">
+            <a href="#balance" class="active"><i class="fas fa-wallet"></i> Balance</a>
+            <a href="#buy"><i class="fas fa-coins"></i> Buy $PIZZA</a>
+            <a href="#transactions"><i class="fas fa-receipt"></i> Transactions</a>
+            <a href="#security"><i class="fas fa-shield-alt"></i> Security</a>
+        </nav>
+        <div class="sidebar-bottom">🍕 To the Moon! 🚀</div>
+    </aside>
+    <main class="dashboard-content">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar">🍕</div>
+                <span>Welcome, Pizza Lover!</span>
+            </div>
+            <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+        <div class="dashboard-cards">
+            <!-- Balance Card -->
+            <div class="dashboard-card" id="balance-card">
+                <h2>🍕 Your Token Balances</h2>
+                <div class="balance-grid">
+                    <div class="balance-item">
+                        <div class="balance-label">SOL</div>
+                        <div class="balance-amount" id="sol-balance">0.00</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">SPL Tokens</div>
+                        <div class="balance-amount" id="spl-balance">0.00</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">$PIZZA</div>
+                        <div class="balance-amount" id="pizza-balance">0.00</div>
+                    </div>
+                </div>
+                <div class="wallet-info">
+                    <div class="wallet-address" id="wallet-address">No wallet connected</div>
+                    <div class="kyc-status" id="kyc-status">KYC: Not verified</div>
+                </div>
+                <div class="balance-actions">
+                    <button class="btn btn-primary meme-btn" id="create-wallet-btn" style="display: none;"><i class="fas fa-wallet"></i> Create Wallet</button>
+                    <button class="btn btn-primary meme-btn" id="buy-pizza-btn"><i class="fas fa-coins"></i> Buy $PIZZA</button>
+                    <button class="btn btn-secondary meme-btn" id="swap-tokens-btn"><i class="fas fa-exchange-alt"></i> Swap Tokens</button>
+                </div>
+            </div>
+            <!-- Recent Transactions -->
+            <div class="dashboard-card" id="transactions-card" style="display:none;">
+                <h2>📜 Recent Transactions</h2>
+                <ul class="transaction-list">
+                    <li><span class="tx-icon">🍕</span> Bought 100 $PIZZA <span class="tx-date">2025-07-01</span></li>
+                    <li><span class="tx-icon">🍕</span> Bought 50 $PIZZA <span class="tx-date">2025-06-30</span></li>
+                    <li><span class="tx-icon">🍕</span> Bought 200 $PIZZA <span class="tx-date">2025-06-29</span></li>
+                </ul>
+            </div>
+            <!-- Security Section -->
+            <div class="dashboard-card" id="security-card" style="display:none;">
+                <h2>🔒 Security Settings</h2>
+                <div class="security-options">
+                    <div class="security-item">
+                        <span id="2fa-status">2FA Status: <strong>Not Enabled</strong></span>
+                        <button id="enable-2fa-btn">Enable 2FA</button>
+                    </div>
+                    <div class="security-item">
+                        <span>Export Wallet (at your own risk!)</span>
+                        <button>Export Private Key</button>
+                    </div>
+                    <div class="security-item">
+                        <span>Change Password</span>
+                        <button>Change</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Buy $PIZZA Modal -->
+        <div id="buy-modal" class="modal meme-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" id="close-buy-modal">&times;</span>
+                <h3>Buy $PIZZA with Fiat <span>🍕💳</span></h3>
+                <div class="buy-options">
+                    <div class="buy-option">
+                        <h4>Credit Card (Coming Soon)</h4>
+                        <p>Buy directly with your credit card via Stripe</p>
+                        <input type="number" placeholder="Amount in USD" class="input meme-input" id="fiat-amount">
+                        <button class="btn btn-primary meme-btn" disabled>Pay with Stripe</button>
+                    </div>
+                    <div class="buy-option">
+                        <h4>Swap SOL for $PIZZA</h4>
+                        <p>Use Jupiter to swap your SOL for $PIZZA tokens</p>
+                        <input type="number" placeholder="Amount in SOL" class="input meme-input" id="sol-amount">
+                        <button class="btn btn-secondary meme-btn" id="swap-sol-pizza">Swap SOL → $PIZZA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Token Swap Modal -->
+        <div id="swap-modal" class="modal meme-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" id="close-swap-modal">&times;</span>
+                <h3>Token Swap <span>🔄</span></h3>
+                <div class="swap-interface">
+                    <div class="swap-input">
+                        <label>From:</label>
+                        <select id="input-token" class="input meme-input">
+                            <option value="So11111111111111111111111111111111111111112">SOL</option>
+                            <option value="">SPL Token</option>
+                        </select>
+                        <input type="number" id="input-amount" placeholder="0.0" class="input meme-input">
+                    </div>
+                    <div class="swap-arrow">↓</div>
+                    <div class="swap-output">
+                        <label>To:</label>
+                        <select id="output-token" class="input meme-input">
+                            <option value="">$PIZZA</option>
+                            <option value="So11111111111111111111111111111111111111112">SOL</option>
+                        </select>
+                        <input type="number" id="output-amount" placeholder="0.0" class="input meme-input" readonly>
+                    </div>
+                    <div class="swap-info" id="swap-info" style="display:none;">
+                        <div>Price Impact: <span id="price-impact">-</span></div>
+                        <div>Estimated Fee: <span id="swap-fee">-</span></div>
+                    </div>
+                    <div class="swap-actions">
+                        <button class="btn btn-secondary meme-btn" id="get-quote-btn">Get Quote</button>
+                        <button class="btn btn-primary meme-btn" id="execute-swap-btn" disabled>Execute Swap</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 2FA Setup Modal -->
+        <div id="twofa-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" id="close-twofa-modal">&times;</span>
+                <h3>Enable Two-Factor Authentication (2FA)</h3>
+                <ol style="text-align:left; color:#fff;">
+                    <li>Scan the QR code below with your Authenticator app (Google Authenticator, Authy, etc).</li>
+                    <li>Enter the 6-digit code from your app to verify and enable 2FA.</li>
+                </ol>
+                <div id="twofa-qr-container" style="margin:1.5rem 0;"></div>
+                <input type="text" id="twofa-code-input" maxlength="6" placeholder="Enter 6-digit code" style="font-size:1.2rem; padding:0.5rem; border-radius:8px; border:none; text-align:center;">
+                <button id="verify-twofa-btn" style="margin-top:1rem;">Verify & Enable 2FA</button>
+                <div id="twofa-message" style="margin-top:1rem; color:#ffe066;"></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    // Global variables
+    let userWallet = null;
+    let authToken = localStorage.getItem('authToken');
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        if (authToken) {
+            loadWalletInfo();
+            loadTransactionHistory();
+        } else {
+            window.location.href = 'user-login.html';
+        }
+    });
+
+    // Blockchain API functions
+    async function apiCall(endpoint, method = 'GET', data = null) {
+        const config = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        };
+        
+        if (data && method !== 'GET') {
+            config.body = JSON.stringify(data);
+        }
+        
+        try {
+            const response = await fetch(`/api/blockchain${endpoint}`, config);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'API request failed');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            showNotification('Error: ' + error.message, 'error');
+            throw error;
+        }
+    }
+
+    // Load wallet information
+    async function loadWalletInfo() {
+        try {
+            const walletData = await apiCall('/wallet');
+            userWallet = walletData;
+            
+            // Update UI with wallet data
+            document.getElementById('wallet-address').textContent = 
+                `${walletData.publicKey.substring(0, 8)}...${walletData.publicKey.substring(-8)}`;
+            document.getElementById('kyc-status').textContent = `KYC: ${walletData.kycTier}`;
+            document.getElementById('sol-balance').textContent = walletData.balances.sol.toFixed(4);
+            document.getElementById('spl-balance').textContent = walletData.balances.spl.toFixed(2);
+            document.getElementById('pizza-balance').textContent = walletData.balances.pizza.toFixed(0);
+            
+        } catch (error) {
+            if (error.message.includes('Wallet not found')) {
+                document.getElementById('create-wallet-btn').style.display = 'inline-block';
+                document.getElementById('wallet-address').textContent = 'No wallet found - Create one below';
+            }
+        }
+    }
+
+    // Create wallet
+    async function createWallet() {
+        try {
+            const result = await apiCall('/wallet/create', 'POST');
+            showNotification('Wallet created successfully!', 'success');
+            await loadWalletInfo();
+        } catch (error) {
+            showNotification('Failed to create wallet: ' + error.message, 'error');
+        }
+    }
+
+    // Load transaction history
+    async function loadTransactionHistory() {
+        try {
+            const result = await apiCall('/transactions?limit=10');
+            updateTransactionList(result.transactions);
+        } catch (error) {
+            console.error('Failed to load transactions:', error);
+        }
+    }
+
+    // Update transaction list in UI
+    function updateTransactionList(transactions) {
+        const transactionList = document.querySelector('.transaction-list');
+        if (!transactionList) return;
+        
+        transactionList.innerHTML = '';
+        
+        if (transactions.length === 0) {
+            transactionList.innerHTML = '<li>No transactions yet</li>';
+            return;
+        }
+        
+        transactions.forEach(tx => {
+            const icon = getTransactionIcon(tx.type);
+            const amount = tx.inputToken ? tx.inputToken.amount : 0;
+            const symbol = tx.inputToken ? tx.inputToken.symbol : '';
+            const date = new Date(tx.createdAt).toLocaleDateString();
+            
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="tx-icon">${icon}</span> 
+                ${tx.type} ${amount} ${symbol} 
+                <span class="tx-date">${date}</span>
+                <span class="tx-status ${tx.status}">${tx.status}</span>
+            `;
+            transactionList.appendChild(li);
+        });
+    }
+
+    // Get transaction icon based on type
+    function getTransactionIcon(type) {
+        const icons = {
+            payment: '💳',
+            swap: '🔄',
+            transfer: '➡️',
+            mint: '✨',
+            stake: '🔒',
+            unstake: '🔓',
+            reward: '🎁'
+        };
+        return icons[type] || '🔍';
+    }
+
+    // Get swap quote
+    async function getSwapQuote() {
+        const inputToken = document.getElementById('input-token').value;
+        const outputToken = document.getElementById('output-token').value;
+        const amount = document.getElementById('input-amount').value;
+        
+        if (!inputToken || !outputToken || !amount) {
+            showNotification('Please fill in all fields', 'warning');
+            return;
+        }
+        
+        try {
+            const quote = await apiCall(`/swap/quote?inputMint=${inputToken}&outputMint=${outputToken}&amount=${amount}`);
+            
+            document.getElementById('output-amount').value = quote.outputAmount;
+            document.getElementById('price-impact').textContent = `${quote.priceImpact}%`;
+            document.getElementById('swap-fee').textContent = `${quote.estimatedFee} SOL`;
+            document.getElementById('swap-info').style.display = 'block';
+            document.getElementById('execute-swap-btn').disabled = false;
+            
+            // Store quote for execution
+            window.currentQuote = quote.quote;
+            
+        } catch (error) {
+            showNotification('Failed to get quote: ' + error.message, 'error');
+        }
+    }
+
+    // Execute swap
+    async function executeSwap() {
+        if (!window.currentQuote) {
+            showNotification('Please get a quote first', 'warning');
+            return;
+        }
+        
+        try {
+            // Create swap transaction
+            const swapResult = await apiCall('/swap/create', 'POST', {
+                quote: window.currentQuote
+            });
+            
+            // Sign and submit transaction
+            const signResult = await apiCall('/transaction/sign', 'POST', {
+                transaction: swapResult.transaction
+            });
+            
+            showNotification(`Swap submitted! Transaction: ${signResult.signature}`, 'success');
+            
+            // Close modal and refresh data
+            document.getElementById('swap-modal').style.display = 'none';
+            setTimeout(() => {
+                loadWalletInfo();
+                loadTransactionHistory();
+            }, 2000);
+            
+        } catch (error) {
+            showNotification('Swap failed: ' + error.message, 'error');
+        }
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 10000;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        
+        // Set background color based on type
+        const colors = {
+            success: '#4CAF50',
+            error: '#f44336',
+            warning: '#ff9800',
+            info: '#2196F3'
+        };
+        notification.style.backgroundColor = colors[type] || colors.info;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+
+    // Modal logic for Buy $PIZZA
+    document.getElementById('buy-pizza-btn').onclick = function() {
+        document.getElementById('buy-modal').style.display = 'flex';
+    };
+    document.getElementById('close-buy-modal').onclick = function() {
+        document.getElementById('buy-modal').style.display = 'none';
+    };
+
+    // Modal logic for Token Swap
+    document.getElementById('swap-tokens-btn').onclick = function() {
+        document.getElementById('swap-modal').style.display = 'flex';
+    };
+    document.getElementById('close-swap-modal').onclick = function() {
+        document.getElementById('swap-modal').style.display = 'none';
+    };
+
+    // Event listeners
+    document.getElementById('create-wallet-btn').onclick = createWallet;
+    document.getElementById('get-quote-btn').onclick = getSwapQuote;
+    document.getElementById('execute-swap-btn').onclick = executeSwap;
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('buy-modal')) {
+            document.getElementById('buy-modal').style.display = 'none';
+        }
+        if (event.target == document.getElementById('swap-modal')) {
+            document.getElementById('swap-modal').style.display = 'none';
+        }
+    };
+    // Tab switching logic
+    const tabLinks = document.querySelectorAll('.sidebar-nav a');
+    const cards = {
+        'balance': document.getElementById('balance-card'),
+        'transactions': document.getElementById('transactions-card'),
+        'security': document.getElementById('security-card')
+    };
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Remove active from all
+            tabLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            // Hide all cards
+            Object.values(cards).forEach(card => card.style.display = 'none');
+            // Show selected card
+            if (this.href.includes('#balance')) cards['balance'].style.display = '';
+            if (this.href.includes('#transactions')) cards['transactions'].style.display = '';
+            if (this.href.includes('#security')) cards['security'].style.display = '';
+        });
+    });
+
+    // 2FA Modal logic
+    const enable2faBtn = document.getElementById('enable-2fa-btn');
+    const twofaModal = document.getElementById('twofa-modal');
+    const closeTwofaModal = document.getElementById('close-twofa-modal');
+    const twofaQrContainer = document.getElementById('twofa-qr-container');
+    const verifyTwofaBtn = document.getElementById('verify-twofa-btn');
+    const twofaCodeInput = document.getElementById('twofa-code-input');
+    const twofaMessage = document.getElementById('twofa-message');
+    const twofaStatus = document.getElementById('2fa-status');
+
+    // Open 2FA modal and fetch QR code
+    enable2faBtn.onclick = async function() {
+        twofaModal.style.display = 'flex';
+        twofaQrContainer.innerHTML = 'Loading QR code...';
+        twofaMessage.textContent = '';
+        twofaCodeInput.value = '';
+        // Fetch QR code from backend
+        try {
+            const res = await fetch('/api/2fa/setup', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            if (data.qrCodeDataUrl) {
+                // Clear container safely
+                twofaQrContainer.textContent = '';
+                
+                // Create image element safely
+                const img = document.createElement('img');
+                img.src = data.qrCodeDataUrl;
+                img.alt = '2FA QR Code';
+                img.style.width = '180px';
+                img.style.height = '180px';
+                twofaQrContainer.appendChild(img);
+            } else {
+                twofaQrContainer.textContent = 'Error loading QR code.';
+            }
+        } catch (err) {
+            twofaQrContainer.textContent = 'Error loading QR code.';
+        }
+    };
+    closeTwofaModal.onclick = function() {
+        twofaModal.style.display = 'none';
+    };
+    window.onclick = function(event) {
+        if (event.target == twofaModal) {
+            twofaModal.style.display = 'none';
+        }
+    };
+    // Verify 2FA code
+    verifyTwofaBtn.onclick = async function() {
+        const code = twofaCodeInput.value.trim();
+        if (!/^[0-9]{6}$/.test(code)) {
+            twofaMessage.textContent = 'Please enter a valid 6-digit code.';
+            return;
+        }
+        twofaMessage.textContent = 'Verifying...';
+        try {
+            const res = await fetch('/api/2fa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ token: code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                twofaMessage.textContent = '2FA enabled successfully!';
+                twofaStatus.innerHTML = '2FA Status: <strong style="color:#ffe066;">Enabled</strong>';
+                setTimeout(() => { twofaModal.style.display = 'none'; }, 1500);
+            } else {
+                twofaMessage.textContent = 'Invalid code. Please try again.';
+            }
+        } catch (err) {
+            twofaMessage.textContent = 'Error verifying code.';
+        }
+    };
+</script>
+</body>
+</html> 

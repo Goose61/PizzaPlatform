@@ -1,75 +1,69 @@
-🌟 [Mission Statement]
-“To empower communities through food, compassion, and blockchain — using the Pizza Token to feed those in need and connect Main Street to the future of finance.”
-
-👁 [Vision Statement]
-“A world where no one goes hungry — where every slice shared builds bridges of peace, love, and decentralized empowerment.”
-
-🌍 [Donation Impact Map]
-Interactive World Map showing:
-
-✅ Asia: Served
-
-✅ North America: Active
-
-✅ Africa: Fed
-
-✅ South America: In Progress
-
-🔜 Europe, Australia: Coming Soon
-
-Each region can be clicked to show:
-
-📸 Photos of real food donations
-
-📍 Partner locations
-
-💬 Community stories
-
-💸 Pizza Token usage stats
-
-🔁 [How It Works]
-🤝 Partner with pizzerias or restaurants
-
-🔗 Enable QR/crypto payments with $PIZZA
-
-🍽 Serve meals — real people, real impact
-
-📈 Reinvest into expanding the mission
-
-🧑‍🍳 [Join the Movement]
-Become a Partner 🍽
-
-Volunteer 🙌
-
-Contribute to the DAO 🧠
-
-Buy $PIZZA Token 💸
-
-❤️ [Stories & Testimonials]
-Real voices from the field: children, families, volunteers, and restaurant owners.
-
-📥 [Donate]
-One-time or recurring
-
-Choose region
-
-Accepts: $PIZZA, SOL, USDC, ETH
-
-"Sponsor a Slice" option: $1 = 1 meal
-
-📲 [Live Transactions Feed]
-Scrollable live feed of on-chain food donations
-
-Map of active stores with QR integration
-
-📣 [Blog / News]
-Community updates
-
-Partnership announcements
-
-Campaigns and milestones
-
-📬 [Contact / Subscribe]
-Join our newsletter
-
-Telegram, Discord, Twitter links
+System Layout: Pizza Platform
+1. User & Wallet Layer
+User Onboarding:
+Users register via the frontend (web/mobile), complete KYC, and set up 2FA.
+Each user is provisioned a custodial wallet (managed by the backend) or can connect their own Solana wallet.
+Token Acquisition:
+Users acquire platform SPL tokens (a copy of $PIZZA) via fiat onramps (e.g., MoonPay) or by swapping on a DEX.
+SPL tokens are credited to the user’s wallet.
+2. Payment Flow
+At Point of Sale:
+User scans a QR code at a participating business.
+The frontend initiates a payment request to the backend, specifying the amount in SPL tokens.
+Atomic Swap:
+The backend receives the SPL tokens and, using a DEX aggregator (e.g., Jupiter), immediately swaps them for USDC.
+The USDC is sent directly to the business’s wallet (either custodial or self-custody).
+This process is atomic: the business never holds SPL tokens, only USDC, eliminating volatility risk.
+3. Rewards & Loyalty
+Reward Distribution:
+For every transaction, the backend calculates and distributes SPL token rewards to the customer’s wallet.
+Customers can stake their SPL tokens for additional yield or redeem them for discounts, NFTs, or other perks.
+Business Loyalty Vaults:
+Businesses can configure custom reward pools (vaults) to incentivize repeat purchases and customer engagement.
+4. Admin & Analytics
+Admin Dashboard:
+Admins manage users, businesses, and monitor transactions via a secure dashboard.
+Analytics modules provide insights into sales, customer behavior, and reward effectiveness.
+5. Security & Compliance
+Authentication:
+All endpoints are protected with JWT, session management, and 2FA.
+KYC/AML:
+Tiered KYC is enforced for both users and businesses, with integration to third-party providers.
+Audit Logging:
+All critical actions are logged for compliance and monitoring.
+6. Fiat Off-Ramp
+USDC Withdrawal:
+Businesses can transfer USDC to a centralized exchange (CEX) that supports Solana USDC.
+From the CEX, they can sell USDC for fiat and withdraw to their bank account [Solflare Help Center].
+[User] --(register/login/KYC/2FA)--> [Frontend] --(API)--> [Backend]
+[User] --(buys SPL tokens)--> [Wallet]
+[User] --(scans QR, pays SPL)--> [Backend]
+[Backend] --(DEX aggregator)--> [SPL->USDC swap]
+[Backend] --(sends USDC)--> [Business Wallet]
+[Backend] --(rewards SPL)--> [User Wallet]
+[Business] --(withdraws USDC)--> [CEX] --(fiat)--> [Bank Account]
+[Admin] --(dashboard)--> [Backend] --(analytics/logs)--> [Database]
+Key Engineering Principles
+Atomicity: Payments are atomic swaps—SPL tokens are converted to USDC in a single backend operation, so businesses never face token volatility.
+DEX Aggregation: All swaps use DEX aggregators for best price and minimal slippage, leveraging deep liquidity pools [0x Aggregator Analysis].
+Security: End-to-end encryption, robust authentication, and audit logging are enforced.
+Compliance: KYC/AML is integrated at both user and business levels.
+Extensibility: Loyalty and rewards logic is modular, allowing businesses to customize incentives.
+Separation of Concerns:
+Frontend: Handles user interaction, QR scanning, and displays rewards.
+Backend: Orchestrates payments, swaps, rewards, compliance, and analytics.
+Blockchain Layer: Handles token transfers, swaps, and staking logic.
+Incentive Alignment
+Customers:
+Fast, borderless payments.
+Earn rewards and staking yield.
+Access to exclusive deals and NFTs.
+Businesses:
+Receive stable USDC instantly.
+No crypto management or volatility risk.
+Custom loyalty programs and analytics.
+Platform:
+Earns fees on swaps and/or reward distribution.
+Grows ecosystem by aligning incentives for all parties.
+In summary:
+The Pizza Platform is a full-stack, crypto-native payment and loyalty system that uses atomic swaps, DEX aggregation, and robust compliance to deliver a seamless experience for both businesses and customers. The architecture ensures price stability, security, and extensibility, making it a future-proof solution for real-world crypto payments.
