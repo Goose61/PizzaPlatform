@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm audit:*)",
+      "Bash(timeout 10 npm start)",
+      "Bash(timeout 15 npm start)",
+      "Bash(npm start)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(wmic process where:*)"
+    ],
+    "deny": []
+  }
+}

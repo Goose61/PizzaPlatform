@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const crypto = require('crypto');
 const User = require('../models/User');
 const KYCService = require('../services/kycService');
-const { requireAuth, require2FA } = require('../middleware/adminAuth');
+const { requireAuth, require2FA } = require('../middleware/auth');
 
 const router = express.Router();
 const kycService = new KYCService();

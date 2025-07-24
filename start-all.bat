@@ -1,0 +1,3 @@
+@echo off
+echo Starting Pizza Platform Backend...
+start cmd /k "npm start" 

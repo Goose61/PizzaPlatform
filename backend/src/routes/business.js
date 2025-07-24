@@ -7,7 +7,7 @@ const Business = require('../models/Business');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const RewardsService = require('../services/rewardsService');
-const { requireAuth, require2FA } = require('../middleware/adminAuth');
+const { requireAuth, require2FA } = require('../middleware/auth');
 
 const router = express.Router();
 const rewardsService = new RewardsService();

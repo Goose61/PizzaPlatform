@@ -1,5 +1,22 @@
 // Load environment variables first
-require('dotenv').config({ path: ['config.env', '.env'].filter(fs => require('fs').existsSync(fs))[0] });
+const fs = require('fs');
+const path = require('path');
+
+// Look for config files from project root
+const projectRoot = path.join(__dirname, '../../');
+const configPaths = [
+  path.join(projectRoot, 'config.env'),
+  path.join(projectRoot, '.env')
+];
+
+const configPath = configPaths.find(configPath => fs.existsSync(configPath));
+if (configPath) {
+  require('dotenv').config({ path: configPath });
+  console.log(`✅ Environment loaded from: ${path.basename(configPath)}`);
+} else {
+  console.error('❌ No environment configuration file found!');
+  console.error('Expected files: config.env or .env in project root');
+}
 
 const express = require('express');
 const session = require('express-session');
@@ -12,8 +29,6 @@ const QRCode = require('qrcode');
 const nodemailer = require('nodemailer');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
 
 // Import database and models
 const database = require('./config/database');
@@ -84,7 +99,8 @@ const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 let passwordBlacklist = new Set();
 async function loadPasswordBlacklist() {
   try {
-    const data = await fs.readFile('./10k-most-common.txt', 'utf8');
+    const fsPromises = require('fs').promises;
+    const data = await fsPromises.readFile('./10k-most-common.txt', 'utf8');
     passwordBlacklist = new Set(data.split('\n').map(p => p.trim().toLowerCase()));
     console.log(`📋 Loaded ${passwordBlacklist.size} blacklisted passwords`);
   } catch (error) {
@@ -272,35 +288,8 @@ async function sendEmail(to, subject, html) {
   }
 }
 
-// Authentication middleware
-function requireAuth(req, res, next) {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
-}
-
-async function require2FA(req, res, next) {
-  try {
-    const user = await User.findById(req.session.userId);
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-    
-    if (user.twoFactorEnabled && !req.session.twoFactorVerified) {
-      return res.status(403).json({ 
-        error: '2FA verification required',
-        requires2FA: true 
-      });
-    }
-    
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error('❌ 2FA check error:', error);
-    res.status(500).json({ error: 'Authentication error' });
-  }
-}
+// Import authentication middleware
+const { requireAuth, require2FA } = require('./middleware/auth');
 
 // Routes
 

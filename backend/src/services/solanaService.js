@@ -14,7 +14,7 @@ const {
   getAccount,
   getMint
 } = require('@solana/spl-token');
-const { Jupiter } = require('@jup-ag/core');
+// Jupiter integration will be implemented separately
 const fetch = require('node-fetch');
 const winston = require('winston');
 
@@ -175,13 +175,18 @@ class SolanaService {
   }
 
   /**
-   * Get Jupiter swap quote
+   * Get Jupiter swap quote (PLACEHOLDER - Jupiter package not installed)
    * @param {string} inputMint - Input token mint
    * @param {string} outputMint - Output token mint
    * @param {number} amount - Input amount
    * @returns {Object} - Swap quote information
    */
   async getSwapQuote(inputMint, outputMint, amount) {
+    // TODO: Implement Jupiter integration
+    throw new Error('Jupiter swap functionality not yet implemented');
+    
+    /* 
+    // Uncomment when Jupiter package is installed
     try {
       const inputMintInfo = await getMint(this.connection, new PublicKey(inputMint));
       const amountInLamports = Math.floor(amount * Math.pow(10, inputMintInfo.decimals));
@@ -218,15 +223,21 @@ class SolanaService {
       });
       throw new Error('Failed to get swap quote');
     }
+    */
   }
 
   /**
-   * Create Jupiter swap transaction
+   * Create Jupiter swap transaction (PLACEHOLDER - Jupiter package not installed)
    * @param {Object} quote - Quote from getSwapQuote
    * @param {string} userPublicKey - User's wallet address
    * @returns {Transaction} - Unsigned swap transaction
    */
   async createSwapTransaction(quote, userPublicKey) {
+    // TODO: Implement Jupiter integration
+    throw new Error('Jupiter swap functionality not yet implemented');
+    
+    /*
+    // Uncomment when Jupiter package is installed
     try {
       const swapResponse = await fetch(`${this.jupiterSwapAPI}/swap`, {
         method: 'POST',
@@ -266,6 +277,7 @@ class SolanaService {
       });
       throw new Error('Failed to create swap transaction');
     }
+    */
   }
 
   /**

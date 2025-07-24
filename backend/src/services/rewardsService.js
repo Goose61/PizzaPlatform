@@ -1,5 +1,5 @@
 const winston = require('winston');
-const { Connection, PublicKey, Transaction, sendAndConfirmTransaction } = require('@solana/web3.js');
+const { Connection, PublicKey, Transaction: SolanaTransaction, sendAndConfirmTransaction } = require('@solana/web3.js');
 const { Token, TOKEN_PROGRAM_ID } = require('@solana/spl-token');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
