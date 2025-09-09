@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Test</title>
+</head>
+<body>
+    <h1>Route Testing Page</h1>
+    <p>This is a simple test to check if routing works.</p>
+    
+    <h2>Test Links:</h2>
+    <ul>
+        <li><a href="index.html">Back to Index</a></li>
+        <li><a href="platform-index.html">Platform Index</a></li>
+        <li><a href="pages/customer-login.html">Customer Login</a></li>
+        <li><a href="pages/business-login.html">Business Login</a></li>
+    </ul>
+
+    <h2>Test Buttons:</h2>
+    <button onclick="window.location.href='platform-index.html'">Go to Platform Index</button>
+    <button onclick="window.open('platform-index.html', '_blank')">Open Platform Index in New Tab</button>
+    
+    <script>
+        console.log('Test page loaded successfully');
+        console.log('Current location:', window.location.href);
+    </script>
+</body>
+</html>

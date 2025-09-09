@@ -58,40 +58,53 @@ kycVerificationId: String, // External provider ID
 kycNotes: String // Admin notes
 ```
 
-### 1.2 Rewards Calculation Engine
-**Current Status**: Transaction types exist, no calculation logic
+### 1.2 Loyalty Vault Engine (GENIUS Compliant)
+**Replaces legacy staking/yield logic** with business-owned vaults that distribute rewards directly.
 
-#### Core Service Implementation:
+#### Core Vault Reward Logic:
 ```javascript
-// services/rewardsService.js - NEW FILE
-class RewardsService {
-  async calculateTransactionReward(transaction) {
-    // Base reward: 1% of transaction value in $PIZZA tokens
-    // Tier multipliers: Tier1(1.5x), Tier2(2x)
-    // Business multipliers: Custom loyalty vault rates
+// services/vaultService.js - NEW FILE
+class VaultService {
+  async calculateVaultReward(vaultConfig, transactionAmount) {
+    // Base reward from vault settings
+    // Example: 2% reward from business-funded vault pool
+    return (vaultConfig.rewardRate / 100) * transactionAmount;
   }
-  
-  async distributeReward(userId, amount, transactionId) {
-    // Mint $PIZZA tokens to user wallet
-    // Log reward transaction
-    // Update user loyalty points
+
+  async distributeVaultReward(userWallet, amount, vaultId) {
+    // Transfer $PIZZA from merchant-funded vault to user
+    // Update vault accounting
+    // Notify user
   }
-  
-  async processStakingRewards() {
-    // Calculate time-based yields (5-10% APR)
-    // Distribute to staked token holders
-    // Handle lock periods (30/90/180 days)
+
+  async processVaultFunding(businessId, amount) {
+    // Allow business to fund their vault in USDC
+    // Convert to $PIZZA SPL if needed (DEX)
+    // Lock funds for programmatic distribution
   }
 }
 ```
 
 #### Integration Points:
-- **Hook into blockchain.js**: Add reward calculation after successful payments
-- **Automatic Distribution**: Create $PIZZA tokens and send to user wallets
-- **Daily Batch Processing**: Staking rewards distribution cron job
+- **Hooked to Payment Completion**: Vault reward distribution after USDC swap
+- **Business Dashboard**: Configure vault rates, track funding, analyze reward impact
+
+---
 
 ### 1.3 Business Registration System
-**Current Status**: Only payment processing exists, no business management
+(*Slight schema adjustment for compliance*)
+```javascript
+loyaltyVault: {
+  vaultId: String,
+  rewardRate: Number, // % back to customers
+  totalDeposited: Number,
+  totalDistributed: Number,
+  fundingSource: String, // e.g. 'self-funded'
+},
+```
+
+---
+
 
 #### New Database Models:
 ```javascript
@@ -149,112 +162,33 @@ POST   /api/business/withdraw        // USDC withdrawal requests
 ## 🏗️ **PHASE 2: SMART CONTRACT INFRASTRUCTURE**
 *Timeline: 6-8 weeks | Priority: HIGH*
 
-### 2.1 Solana Program Development
-**Current Status**: All logic is off-chain, needs on-chain programs
-
-#### Required Rust/Anchor Programs:
+### 2.1 Loyalty Vault Smart Contracts (Rust/Anchor)
+Replaces staking programs with merchant-owned vault logic.
 ```rust
-// programs/loyalty_vaults/src/lib.rs - NEW PROGRAM
-#[program]
 pub mod loyalty_vaults {
-    pub fn initialize_vault(
-        ctx: Context<InitializeVault>,
-        business_id: String,
-        reward_rate: u16, // Basis points (e.g., 150 = 1.5%)
-    ) -> Result<()> {
-        // Create business-specific reward pool
-        // Set reward distribution rules
-        // Initialize vault with seed: [b"vault", business_id.as_bytes()]
+    pub fn initialize_vault(ctx: Context<InitializeVault>, business_id: String, reward_rate: u16) -> Result<()> {
+        // Merchant initializes vault with % reward config
     }
-    
-    pub fn deposit_rewards(
-        ctx: Context<DepositRewards>,
-        amount: u64,
-    ) -> Result<()> {
-        // Business deposits $PIZZA tokens for customer rewards
-        // Update vault balance
-        // Emit deposit event
+
+    pub fn fund_vault(ctx: Context<FundVault>, amount: u64) -> Result<()> {
+        // Accept business funding for vault
     }
-    
-    pub fn distribute_reward(
-        ctx: Context<DistributeReward>,
-        customer: Pubkey,
-        transaction_amount: u64,
-    ) -> Result<()> {
-        // Calculate reward based on vault settings
-        // Transfer $PIZZA tokens to customer
-        // Update vault metrics
+
+    pub fn distribute_reward(ctx: Context<DistributeReward>, customer: Pubkey, transaction_amount: u64) -> Result<()> {
+        // Compute reward from vault, send to customer
     }
 }
 ```
 
-```rust
-// programs/staking/src/lib.rs - NEW PROGRAM
-#[program]
-pub mod pizza_staking {
-    pub fn stake_tokens(
-        ctx: Context<StakeTokens>,
-        amount: u64,
-        lock_period: u32, // Days: 30, 90, or 180
-    ) -> Result<()> {
-        // Lock $PIZZA tokens for specified period
-        // Calculate APR based on lock period
-        // Create staking account with PDA
-    }
-    
-    pub fn claim_rewards(ctx: Context<ClaimRewards>) -> Result<()> {
-        // Calculate time-based rewards
-        // Distribute yield to staker
-        // Update staking metrics
-    }
-    
-    pub fn unstake_tokens(ctx: Context<UnstakeTokens>) -> Result<()> {
-        // Check if lock period expired
-        // Return principal + rewards
-        // Close staking account
-    }
-}
-```
+---
 
-#### Program Deployment Requirements:
-- **Anchor Framework**: Set up Rust development environment
-- **Testing Suite**: Unit tests for all program instructions
-- **Security Audit**: Smart contract security review
-- **Mainnet Deployment**: Deploy to Solana mainnet with proper governance
-
-### 2.2 Blockchain Service Integration
-**Current Status**: Basic Solana integration exists, needs program interaction
-
-#### Enhanced Services:
+### 2.2 Blockchain Services
+(*Updated to remove staking*)
 ```javascript
-// services/stakingService.js - NEW FILE
-class StakingService {
-  async createStakeTransaction(userWallet, amount, lockPeriod) {
-    // Create instruction to call staking program
-    // Handle token approval and transfer
-    // Return unsigned transaction
-  }
-  
-  async getStakingInfo(userWallet) {
-    // Query on-chain staking accounts
-    // Calculate pending rewards
-    // Return staking status and earnings
-  }
-}
-
-// services/loyaltyVaultService.js - NEW FILE
 class LoyaltyVaultService {
-  async initializeBusinessVault(businessId, rewardRate) {
-    // Call loyalty_vaults program
-    // Create vault PDA for business
-    // Set initial configuration
-  }
-  
-  async distributeReward(vaultId, customer, amount) {
-    // Calculate reward from vault
-    // Transfer $PIZZA to customer
-    // Update vault metrics
-  }
+  async initializeVault(businessId, rewardRate) { ... }
+  async fundVault(businessId, amount) { ... }
+  async handleTransactionReward(vaultId, user, txnAmount) { ... }
 }
 ```
 
@@ -353,72 +287,12 @@ class CEXService {
 *Timeline: 6-8 weeks | Priority: HIGH*
 
 ### 4.1 Merchant Dashboard
-**Current Status**: Admin dashboard exists, no merchant interface
+- Vault configuration UI
+- Analytics on vault engagement, ROI, and customer lock-in
 
-#### New Dashboard Components:
-```jsx
-// pages/MerchantDashboard.jsx - NEW PAGE
-const MerchantDashboard = () => {
-  return (
-    <div className="merchant-dashboard">
-      <DashboardHeader />
-      <MetricsOverview />        {/* Revenue, transactions, customers */}
-      <PaymentHistory />         {/* Recent payments received */}
-      <LoyaltyVaultConfig />     {/* Configure reward rates */}
-      <CustomerAnalytics />      {/* Customer behavior insights */}
-      <WithdrawalInterface />    {/* USDC withdrawal requests */}
-      <QRCodeGenerator />        {/* Generate payment QR codes */}
-    </div>
-  );
-};
-```
-
-#### Analytics Engine:
-```javascript
-// services/analyticsService.js - NEW FILE
-class AnalyticsService {
-  async getBusinessMetrics(businessId, timeRange) {
-    // Calculate revenue, transaction volume
-    // Customer acquisition and retention
-    // Payment method breakdown
-    // Loyalty program effectiveness
-  }
-  
-  async getCustomerInsights(businessId) {
-    // Frequent customers identification
-    // Average transaction values
-    // Peak usage times
-    // Geographic distribution
-  }
-}
-```
-
-### 4.2 Advanced Loyalty Features
-**Current Status**: Basic loyalty points in transaction model
-
-#### Loyalty Campaign Management:
-```javascript
-// models/LoyaltyCampaign.js - NEW MODEL
-const campaignSchema = new mongoose.Schema({
-  businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business' },
-  name: String,
-  type: String, // 'cashback', 'points', 'discount', 'nft_reward'
-  rules: {
-    minPurchase: Number,
-    rewardRate: Number,
-    maxReward: Number,
-    validUntil: Date
-  },
-  isActive: Boolean,
-  totalBudget: Number,
-  spent: Number,
-  customers: [{ 
-    userId: mongoose.Schema.Types.ObjectId,
-    totalEarned: Number,
-    lastActivity: Date
-  }]
-});
-```
+### 4.2 Loyalty Campaigns via Vaults
+- Businesses can launch reward campaigns through their funded vaults
+- Users earn rewards based on spend + vault config
 
 ---
 
@@ -504,6 +378,31 @@ class ComplianceService {
 
 ## 🧪 **PHASE 7: TESTING & OPTIMIZATION**
 *Timeline: 2-3 weeks | Priority: HIGH*
+
+(*Add smart contract vault tests in place of staking*)
+
+---
+
+## 📈 **SUCCESS METRICS (Updated)**
+- [ ] 100+ business vaults configured
+- [ ] $500K+ vault-funded rewards distributed
+- [ ] 80% vault retention rate across top merchants
+
+---
+
+## ⚠️ **RISKS & MITIGATIONS (Updated)**
+- **Regulatory Risk:** Vault system designed to keep reward logic outside of issuer, avoiding GENIUS Act yield restrictions.
+- **Security Risk:** Each vault must pass audit and operate on isolated smart contracts.
+
+---
+
+## ✨ **NEXT STEPS**
+1. Replace stakingService.js with vaultService.js
+2. Begin Solana vault contract development
+3. Update frontend to reflect vault participation rewards
+4. Begin testing merchant-configured reward scenarios
+
+---
 
 ### 7.1 Comprehensive Testing
 **Current Status**: No test suite

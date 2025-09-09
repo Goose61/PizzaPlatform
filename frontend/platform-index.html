@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Platform - Choose Your Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --pizza-orange: #ff6b35;
+            --pizza-red: #d32f2f;
+            --pizza-yellow: #ffb74d;
+            --pizza-blue: #42a5f5;
+            --pizza-purple: #ab47bc;
+            --admin-primary: #2c3e50;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .platform-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .platform-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .portal-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            text-align: center;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--portal-color, #ccc);
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+        
+        .portal-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .customer-portal {
+            --portal-color: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+        }
+        
+        .customer-portal .portal-icon {
+            background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+        }
+        
+        
+        .cn-business-portal {
+            --portal-color: linear-gradient(135deg, var(--pizza-blue), var(--pizza-purple));
+        }
+        
+        .cn-business-portal .portal-icon {
+            background: linear-gradient(135deg, var(--pizza-blue), var(--pizza-purple));
+        }
+        
+        .admin-portal {
+            --portal-color: linear-gradient(135deg, var(--admin-primary), #34495e);
+        }
+        
+        .admin-portal .portal-icon {
+            background: linear-gradient(135deg, var(--admin-primary), #34495e);
+        }
+        
+        .portal-button {
+            background: var(--portal-color);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .portal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .feature-list {
+            text-align: left;
+            padding-left: 1rem;
+        }
+        
+        .feature-list li {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        
+        .feature-list i {
+            color: var(--feature-color, #666);
+            width: 20px;
+        }
+        
+        .system-overview {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .spec-highlight {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 5px solid var(--pizza-orange);
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="platform-header">
+            <div class="platform-logo">
+                <i class="fas fa-pizza-slice"></i>
+            </div>
+            <h1 class="display-4 mb-2">Pizza Platform</h1>
+            <p class="lead mb-0">Solana-based Payment & Loyalty Ecosystem</p>
+            <p class="text-white-50">Choose your portal to access the platform</p>
+        </div>
+
+
+        <!-- Portal Cards -->
+        <div class="row">
+            <!-- Customer Portal -->
+            <div class="col-lg-6 col-md-6 mb-4">
+                <div class="portal-card customer-portal">
+                    <div class="portal-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>Customer Portal</h3>
+                    <p class="text-muted mb-3">
+                        Access your wallet, track rewards, and manage your $PIZZA SPL tokens. 
+                        Earn rewards with every $15 USDC payment.
+                    </p>
+                    
+                    <ul class="feature-list" style="--feature-color: var(--pizza-orange);">
+                        <li><i class="fas fa-check-circle"></i> Digital wallet management</li>
+                        <li><i class="fas fa-check-circle"></i> Earn 0.3 $PIZZA SPL per transaction</li>
+                        <li><i class="fas fa-check-circle"></i> Investment token conversion (with KYC)</li>
+                        <li><i class="fas fa-check-circle"></i> Gift card NFT collection</li>
+                        <li><i class="fas fa-check-circle"></i> Transaction history tracking</li>
+                        <li><i class="fas fa-check-circle"></i> Real-time balance updates</li>
+                    </ul>
+                    
+                    <button class="portal-button" onclick="openCustomerPortal()">
+                        <i class="fas fa-arrow-right me-2"></i> Enter Customer Portal
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- CN Business Portal -->
+            <div class="col-lg-6 col-md-6 mb-4">
+                <div class="portal-card cn-business-portal">
+                    <div class="portal-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3>CN Business Dashboard</h3>
+                    <p class="text-muted mb-3">
+                        Crypto Native businesses with USDC retention, 
+                        Kamino staking, and advanced DeFi features.
+                    </p>
+                    
+                    <ul class="feature-list" style="--feature-color: var(--pizza-blue);">
+                        <li><i class="fas fa-check-circle"></i> USDC retention & withdrawal options</li>
+                        <li><i class="fas fa-check-circle"></i> 1% platform fee + 1.3% vault contribution</li>
+                        <li><i class="fas fa-check-circle"></i> Optional Kamino staking (4% APY, 50/50 split)</li>
+                        <li><i class="fas fa-check-circle"></i> $3,773.93 annual savings</li>
+                        <li><i class="fas fa-check-circle"></i> Advanced loyalty program configuration</li>
+                        <li><i class="fas fa-check-circle"></i> DeFi-integrated customer rewards</li>
+                    </ul>
+                    
+                    <button class="portal-button" onclick="openCNBusinessPortal()">
+                        <i class="fas fa-arrow-right me-2"></i> Enter CN Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Portal -->
+            <div class="col-lg-6 col-md-6 mb-4">
+                <div class="portal-card admin-portal">
+                    <div class="portal-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Platform Admin</h3>
+                    <p class="text-muted mb-3">
+                        Complete system management, analytics, vault oversight, 
+                        and business verification tools.
+                    </p>
+                    
+                    <ul class="feature-list" style="--feature-color: var(--admin-primary);">
+                        <li><i class="fas fa-check-circle"></i> Business verification & management</li>
+                        <li><i class="fas fa-check-circle"></i> User KYC oversight</li>
+                        <li><i class="fas fa-check-circle"></i> Platform vault analytics ($2,320 surplus)</li>
+                        <li><i class="fas fa-check-circle"></i> Transaction monitoring & reporting</li>
+                        <li><i class="fas fa-check-circle"></i> Kamino staking management</li>
+                        <li><i class="fas fa-check-circle"></i> System maintenance & health monitoring</li>
+                    </ul>
+                    
+                    <button class="portal-button" onclick="openAdminPortal()">
+                        <i class="fas fa-arrow-right me-2"></i> Enter Admin Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        <div class="system-overview">
+            <h3 class="text-center mb-4">
+                <i class="fas fa-cogs text-primary"></i> System Architecture Overview
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="spec-highlight">
+                        <h5><i class="fas fa-coins"></i> Unified Platform Vault</h5>
+                        <p class="mb-0">
+                            All businesses contribute 1.3% ($0.195 per transaction) to a single platform vault 
+                            that funds all customer rewards and gift cards, with $2,320.06 annual surplus per business.
+                        </p>
+                    </div>
+                    
+                    <div class="spec-highlight">
+                        <h5><i class="fas fa-exchange-alt"></i> Fixed Payment System</h5>
+                        <p class="mb-0">
+                            All transactions are fixed at $15 USDC via Solana Pay with 0.3 $PIZZA SPL rewards, 
+                            atomic Jupiter DEX swaps, and unified fee structure for CN businesses.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="spec-highlight">
+                        <h5><i class="fas fa-seedling"></i> Kamino Staking (CN Only)</h5>
+                        <p class="mb-0">
+                            CN businesses can stake vault contributions at 4% APY with 50/50 yield split 
+                            ($119.07 to business, $119.07 to platform rewards fund).
+                        </p>
+                    </div>
+                    
+                    <div class="spec-highlight">
+                        <h5><i class="fas fa-chart-line"></i> Financial Projections</h5>
+                        <p class="mb-0">
+                            $72,653.20 annual revenue, $19,361.35 net profit, 16-month break-even timeline 
+                            with significant cost savings for all participating businesses.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="fas fa-shield-alt"></i> 
+                    <strong>Security Score: 9.3/10</strong> - Enterprise-grade security with comprehensive audit logging
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openCustomerPortal() {
+            window.open('pages/customer-login.html', '_blank');
+        }
+        
+        function openCNBusinessPortal() {
+            window.open('pages/business-login.html?type=CN', '_blank');
+        }
+        
+        function openAdminPortal() {
+            window.open('pages/admin-login.html', '_blank');
+        }
+        
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate portal cards on load
+            const cards = document.querySelectorAll('.portal-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

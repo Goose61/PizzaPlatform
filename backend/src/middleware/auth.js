@@ -22,6 +22,21 @@ async function require2FA(req, res, next) {
       return res.status(401).json({ error: 'User not found' });
     }
     
+    // Check if user account is still active
+    if (!user.isActive) {
+      return res.status(403).json({ error: 'Account is inactive' });
+    }
+    
+    // Check if account is locked
+    if (user.isLocked) {
+      return res.status(423).json({ error: 'Account is temporarily locked' });
+    }
+    
+    // Verify session ownership matches user
+    if (req.session.email && req.session.email !== user.email) {
+      return res.status(401).json({ error: 'Session mismatch' });
+    }
+    
     if (user.twoFactorEnabled && !req.session.twoFactorVerified) {
       return res.status(403).json({ 
         error: '2FA verification required',

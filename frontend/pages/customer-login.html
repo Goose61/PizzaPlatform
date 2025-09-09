@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - Pizza Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LdRbK0rAAAAAHBgxTc03a4BZUSlgKov80DRhM7H" async defer></script>
+    <style>
+        :root {
+            --pizza-primary: #e67e22;
+            --pizza-secondary: #d35400;
+            --pizza-accent: #f39c12;
+            --pizza-dark: #2c3e50;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--pizza-primary) 0%, var(--pizza-secondary) 100%);
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .customer-login-container {
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .customer-login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--pizza-primary), var(--pizza-accent));
+        }
+        
+        .pizza-logo {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--pizza-primary), var(--pizza-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 15px 30px rgba(230, 126, 34, 0.3);
+            position: relative;
+        }
+        
+        .pizza-logo::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--pizza-accent), var(--pizza-primary));
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .customer-title {
+            background: linear-gradient(45deg, var(--pizza-primary), var(--pizza-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-badge {
+            background: rgba(230, 126, 34, 0.1);
+            color: var(--pizza-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(230, 126, 34, 0.2);
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--pizza-primary);
+            box-shadow: 0 0 0 0.2rem rgba(230, 126, 34, 0.15);
+        }
+        
+        .customer-login-button {
+            background: linear-gradient(135deg, var(--pizza-primary), var(--pizza-secondary));
+            border: none;
+            color: white;
+            padding: 0.875rem;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .customer-login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(230, 126, 34, 0.3);
+        }
+        
+        .customer-login-button:active {
+            transform: translateY(0);
+        }
+        
+        .customer-login-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .customer-login-button:hover::before {
+            left: 100%;
+        }
+        
+        .pizza-features {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feature-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--pizza-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            margin-right: 0.75rem;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 1000;
+        }
+        
+        .spinner-custom {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e9ecef;
+            border-left: 4px solid var(--pizza-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .register-link a {
+            color: var(--pizza-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            color: var(--pizza-secondary);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="customer-login-container">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="text-center">
+                    <div class="spinner-custom mb-3"></div>
+                    <div>
+                        <strong>Signing in...</strong>
+                        <br><small class="text-muted">Please wait a moment</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pizza-logo">
+                <i class="fas fa-pizza-slice"></i>
+            </div>
+            
+            <h1 class="customer-title h2">Welcome Back!</h1>
+            
+            <div class="welcome-badge">
+                <i class="fas fa-user me-2"></i>
+                <strong>Customer Portal</strong> - Access your pizza rewards & orders
+            </div>
+            
+            <!-- Customer Login Form -->
+            <form id="customerLoginForm">
+                <div class="mb-3">
+                    <label for="customerEmail" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Email Address
+                    </label>
+                    <input type="email" class="form-control" id="customerEmail" required 
+                           placeholder="Enter your email" autocomplete="email">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="customerPassword" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="customerPassword" required
+                               placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="btn btn-outline-secondary toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberCustomer">
+                    <label class="form-check-label" for="rememberCustomer">
+                        Keep me logged in
+                    </label>
+                </div>
+                
+                <button type="submit" class="customer-login-button">
+                    <i class="fas fa-sign-in-alt me-2"></i> 
+                    <span id="loginButtonText">Sign In to Your Account</span>
+                </button>
+            </form>
+            
+            <!-- Forgot Password Link -->
+            <div class="text-center mb-3">
+                <a href="#" onclick="forgotPassword()" class="text-muted small">
+                    <i class="fas fa-key me-1"></i>Forgot your password?
+                </a>
+            </div>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                <p class="mb-2 text-muted small">Don't have an account yet?</p>
+                <a href="customer-register.html" class="btn btn-outline-primary">
+                    <i class="fas fa-user-plus me-2"></i>Create Your Account
+                </a>
+            </div>
+            
+            <!-- Pizza Platform Features -->
+            <div class="pizza-features">
+                <h6 class="mb-3 text-center">
+                    <i class="fas fa-gift me-2"></i>What You Get
+                </h6>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>
+                        <strong>Pizza Rewards:</strong> Earn 0.3 $PIZZA tokens for every $15 purchase
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div>
+                        <strong>Gift Cards:</strong> Buy and redeem NFT-based pizza gift cards
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div>
+                        <strong>Local Partners:</strong> Discover participating pizza shops near you
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <strong>Track Spending:</strong> Monitor your pizza expenses and loyalty rewards
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../config.js"></script>
+    <script src="../assets/js/email-verification.js"></script>
+    <script>
+        const apiBase = window.API_BASE + '/api';
+        let recaptchaSiteKey = null;
+
+        // Get reCAPTCHA site key from backend
+        async function loadRecaptchaConfig() {
+            try {
+                const response = await fetch(`${apiBase}/config/recaptcha`);
+                if (response.ok) {
+                    const config = await response.json();
+                    recaptchaSiteKey = config.siteKey;
+                    console.log('reCAPTCHA Enterprise v3 configured for customer login');
+                } else {
+                    console.warn('Could not load reCAPTCHA configuration - continuing without');
+                    recaptchaSiteKey = null;
+                }
+            } catch (error) {
+                console.warn('Error loading reCAPTCHA config - continuing in development mode:', error);
+                recaptchaSiteKey = null;
+            }
+        }
+
+        // Main login form handler
+        document.getElementById('customerLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await performCustomerLogin();
+        });
+
+        async function performCustomerLogin() {
+            const email = document.getElementById('customerEmail').value.trim();
+            const password = document.getElementById('customerPassword').value;
+            
+            if (!email || !password) {
+                showAlert('Please enter both email and password', 'warning');
+                return;
+            }
+
+            let recaptchaToken = null;
+            
+            // Use reCAPTCHA Enterprise as per Google's integration instructions
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        grecaptcha.enterprise.ready(async () => {
+                            try {
+                                recaptchaToken = await grecaptcha.enterprise.execute(recaptchaSiteKey, {
+                                    action: 'CUSTOMER_LOGIN'
+                                });
+                                console.log('✅ reCAPTCHA Enterprise token generated for CUSTOMER_LOGIN action');
+                                resolve();
+                            } catch (error) {
+                                reject(error);
+                            }
+                        });
+                    });
+                } catch (recaptchaError) {
+                    console.warn('⚠️ reCAPTCHA error (continuing without):', recaptchaError);
+                    // Continue without reCAPTCHA in development mode
+                }
+            } else {
+                console.warn('⚠️ reCAPTCHA Enterprise not loaded - continuing in development mode');
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${apiBase}/customer/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        password,
+                        ...(recaptchaToken && { recaptchaToken })
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    completeLogin(data);
+                } else {
+                    showAlert(data.error || 'Login failed. Please check your credentials.', 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Customer login error:', error);
+                showAlert('Connection error. Please try again.', 'danger');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function completeLogin(data) {
+            // Store customer authentication
+            localStorage.setItem('customerToken', data.token);
+            localStorage.setItem('customerEmail', data.email);
+            localStorage.setItem('customerId', data.userId);
+            
+            // Optional: Store remember preference
+            if (document.getElementById('rememberCustomer').checked) {
+                localStorage.setItem('customerRemember', 'true');
+            }
+            
+            showAlert('Login successful! Welcome back!', 'success');
+            
+            // Redirect to customer dashboard
+            setTimeout(() => {
+                window.location.href = 'customer-dashboard.html';
+            }, 1500);
+        }
+
+        async function forgotPassword() {
+            const email = document.getElementById('customerEmail').value.trim();
+            
+            if (!email) {
+                showAlert('Please enter your email address first', 'info');
+                document.getElementById('customerEmail').focus();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBase}/customer/forgot-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Password reset instructions have been sent to your email', 'success');
+                } else {
+                    showAlert(data.error || 'Failed to send reset email', 'danger');
+                }
+                
+            } catch (error) {
+                console.error('Forgot password error:', error);
+                showAlert('Connection error. Please try again.', 'danger');
+            }
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function showAlert(message, type) {
+            // Remove any existing alerts
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.customer-login-container').insertBefore(
+                alertDiv, 
+                document.querySelector('.pizza-logo')
+            );
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Password visibility toggle functionality
+        function togglePassword(event) {
+            const button = event.currentTarget;
+            const passwordInput = button.previousElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load reCAPTCHA configuration
+            await loadRecaptchaConfig();
+            
+            // Initialize password visibility toggle
+            const togglePasswordBtn = document.querySelector('.toggle-password');
+            if (togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', togglePassword);
+            }
+            
+            // Initialize email verification for customer email field
+            const customerEmailInput = document.getElementById('customerEmail');
+            if (customerEmailInput && typeof EmailInputValidator !== 'undefined') {
+                new EmailInputValidator(customerEmailInput, {
+                    validateOnBlur: true,
+                    validateOnType: false,
+                    debounceTime: 600,
+                    showSuggestions: true
+                });
+                console.log('✅ Email verification initialized for customer login');
+            }
+        });
+
+        // Check if already logged in
+        if (localStorage.getItem('customerToken')) {
+            const rememberSetting = localStorage.getItem('customerRemember');
+            if (rememberSetting === 'true') {
+                showAlert('You are already logged in. Redirecting...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'customer-dashboard.html';
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
+
+

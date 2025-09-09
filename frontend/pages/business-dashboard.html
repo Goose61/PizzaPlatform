@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Dashboard - Pizza Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/pizza-custom.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Solana Web3.js library -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <!-- Try using a webpack-bundled version from unpkg that should handle browser compatibility -->
+    <script src="https://unpkg.com/@solana/pay@0.2.6/dist/index.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Checking for Solana Pay bundle...');
+            
+            // Check multiple possible ways the library might expose itself
+            let SolanaPayLib = null;
+            
+            if (typeof SolanaPay !== 'undefined') {
+                SolanaPayLib = SolanaPay;
+                console.log('✅ Found SolanaPay global');
+            } else if (typeof window.SolanaPay !== 'undefined') {
+                SolanaPayLib = window.SolanaPay;
+                console.log('✅ Found window.SolanaPay');
+            } else if (typeof require !== 'undefined') {
+                try {
+                    SolanaPayLib = require('@solana/pay');
+                    console.log('✅ Found via require');
+                } catch (e) {
+                    console.log('Require failed:', e.message);
+                }
+            }
+            
+            if (SolanaPayLib && SolanaPayLib.encodeURL && SolanaPayLib.createQR) {
+                // Make functions globally available
+                window.encodeURL = SolanaPayLib.encodeURL;
+                window.createQR = SolanaPayLib.createQR;
+                window.parseURL = SolanaPayLib.parseURL;
+                window.findReference = SolanaPayLib.findReference;
+                window.validateTransfer = SolanaPayLib.validateTransfer;
+                window.createTransfer = SolanaPayLib.createTransfer;
+                window.SolanaPayLoaded = true;
+                
+                console.log('✅ Solana Pay functions made globally available');
+                console.log('Available functions:', Object.keys(SolanaPayLib).filter(key => typeof SolanaPayLib[key] === 'function'));
+            } else {
+                console.error('❌ Solana Pay library not found or incomplete');
+                console.log('Available globals with "pay":', Object.keys(window).filter(k => k.toLowerCase().includes('pay')));
+                console.log('Available globals with "solana":', Object.keys(window).filter(k => k.toLowerCase().includes('solana')));
+                
+                window.SolanaPayLoaded = false;
+            }
+        });
+        
+        // Additional script verification
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check if required libraries loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js failed to load');
+                document.body.insertAdjacentHTML('afterbegin', 
+                    '<div style="background:#dc3545;color:white;padding:10px;text-align:center;">⚠️ Charts library failed to load. Please refresh the page.</div>'
+                );
+            }
+            
+            // Check Solana Web3.js
+            if (typeof solanaWeb3 !== 'undefined') {
+                console.log('Solana Web3.js library loaded successfully');
+                window.PublicKey = solanaWeb3.PublicKey;
+            } else {
+                console.warn('Solana Web3.js library failed to load');
+            }
+            
+            console.log('All libraries initialized');
+        });
+    </script>
+</head>
+<body class="admin-dashboard-body">
+    <header class="admin-header">
+        <div class="admin-nav">
+            <div class="admin-brand">
+                <i class="fas fa-pizza-slice"></i>
+                <span id="business-name">Pizza Platform Business</span>
+            </div>
+            <div class="admin-user">
+                <div class="wallet-info">
+                    <i class="fas fa-wallet"></i>
+                    <span id="wallet-balance">$0.00</span>
+                </div>
+                <button id="business-logout" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <nav class="admin-menu">
+                <a href="#overview" class="nav-item active" data-view="overview">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#transactions" class="nav-item" data-view="transactions">
+                    <i class="fas fa-receipt"></i>
+                    <span>Transactions</span>
+                </a>
+                <a href="#vault" class="nav-item" data-view="vault">
+                    <i class="fas fa-piggy-bank"></i>
+                    <span>Platform Vault</span>
+                </a>
+                <a href="#settlement" class="nav-item" data-view="settlement">
+                    <i class="fas fa-university"></i>
+                    <span>Settlement</span>
+                </a>
+                <a href="#loyalty" class="nav-item" data-view="loyalty" id="loyalty-nav">
+                    <i class="fas fa-gift"></i>
+                    <span>Loyalty Program</span>
+                </a>
+                <a href="#gift-cards" class="nav-item" data-view="gift-cards">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Gift Cards</span>
+                </a>
+                <a href="#payment" class="nav-item" data-view="payment">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Payment QR</span>
+                </a>
+                <a href="#settings" class="nav-item" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <button class="btn btn-sm btn-primary" onclick="mintGiftCards()">
+                    <i class="fas fa-plus"></i> Mint Gift Cards
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="refreshDashboard()">
+                    <i class="fas fa-sync"></i> Refresh Data
+                </button>
+                <button class="btn btn-sm btn-outline cn-only" onclick="requestWithdrawal()" style="display: block;">
+                    <i class="fas fa-dollar-sign"></i> Request Settlement
+                </button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <!-- Overview Section -->
+            <div id="overview-section" class="dashboard-section active">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Business Overview</h2>
+                        <div class="business-status">
+                            <span class="business-type" id="business-type-display">CN Business</span>
+                            <span class="verification-status" id="verification-status">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card revenue">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-revenue">$0.00</h3>
+                                <p>Total Revenue</p>
+                                <small class="stat-change positive" id="revenue-change">+0% vs last month</small>
+                            </div>
+                        </div>
+                        <div class="stat-card transactions">
+                            <div class="stat-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-transactions">0</h3>
+                                <p>Total Transactions</p>
+                                <small class="stat-change" id="transaction-change">$15 fixed per transaction</small>
+                            </div>
+                        </div>
+                        <div class="stat-card vault">
+                            <div class="stat-icon">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="vault-contribution">$0.00</h3>
+                                <p>Vault Contribution</p>
+                                <small class="stat-change" id="vault-target">Target: $7,117.50/year</small>
+                            </div>
+                        </div>
+                        <div class="stat-card fees">
+                            <div class="stat-icon">
+                                <i class="fas fa-percent"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="fee-structure">2.75%</h3>
+                                <p>Total Fee Rate</p>
+                                <small class="stat-change" id="fee-breakdown">1.45% Platform + 1.3% Vault</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3><i class="fas fa-chart-bar"></i> Daily Transaction Volume</h3>
+                            <canvas id="transactionChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3><i class="fas fa-pie-chart"></i> Revenue Breakdown</h3>
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+
+                    <!-- Recent Activity -->
+                    <div class="activity-section">
+                        <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                        <div class="activity-list" id="recent-activity">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>$15 USDC Payment Received</strong></p>
+                                    <small>Customer reward: 0.3 $PIZZA SPL • 2 minutes ago</small>
+                                </div>
+                                <div class="activity-amount positive">+$14.59</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div id="transactions-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-receipt"></i> Transaction History</h2>
+                        <div class="section-actions">
+                            <select id="transaction-filter" class="form-select">
+                                <option value="">All Transactions</option>
+                                <option value="payment">Payments</option>
+                                <option value="settlement">Settlements</option>
+                                <option value="vault">Vault Contributions</option>
+                            </select>
+                            <button class="btn btn-success btn-sm" onclick="createTestTransaction()">
+                                <i class="fas fa-plus"></i> Add Test Transaction
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="exportTransactions()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table" id="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Transaction ID</th>
+                                    <th>Amount (USDC)</th>
+                                    <th>Status</th>
+                                    <th>Customer Wallet</th>
+                                    <th>Fees</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Transactions will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Vault Section -->
+            <div id="vault-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-piggy-bank"></i> Platform Vault Analytics</h2>
+                        <div class="vault-status">
+                            <span class="vault-health" id="vault-health">Healthy</span>
+                        </div>
+                    </div>
+                    
+                    <div class="vault-grid">
+                        <div class="vault-card contribution">
+                            <div class="vault-header">
+                                <h3>Your Contribution</h3>
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="vault-amount" id="my-vault-contribution">$0.00</div>
+                            <div class="vault-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="contribution-progress"></div>
+                                </div>
+                                <span class="progress-text" id="contribution-percentage">0%</span>
+                            </div>
+                            <small>Target: $7,117.50/year (1.3% per transaction)</small>
+                        </div>
+                        
+                        <div class="vault-card rewards">
+                            <div class="vault-header">
+                                <h3>Rewards Funded</h3>
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="vault-amount" id="rewards-funded">$0.00</div>
+                            <div class="vault-detail">
+                                <span>0.3 $PIZZA SPL per transaction</span>
+                            </div>
+                            <small>Funded by unified platform vault</small>
+                        </div>
+                        
+                        <div class="vault-card surplus">
+                            <div class="vault-header">
+                                <h3>Platform Surplus</h3>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="vault-amount" id="platform-surplus">$0.00</div>
+                            <div class="vault-detail">
+                                <span>After rewards & gift cards</span>
+                            </div>
+                            <small>$2,320.06 surplus per business projected</small>
+                        </div>
+                    </div>
+
+                    <div class="vault-breakdown">
+                        <h3>Vault Economics</h3>
+                        <div class="breakdown-chart">
+                            <canvas id="vaultChart"></canvas>
+                        </div>
+                        <div class="breakdown-details">
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Vault Contribution (1.3%)</span>
+                                <span class="breakdown-value">$0.195 per transaction</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Reward Cost</span>
+                                <span class="breakdown-value">$0.15 per 0.3 $PIZZA SPL</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">Gift Cards</span>
+                                <span class="breakdown-value">$600/year budget</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settlement Section -->
+            <div id="settlement-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-university"></i> Settlement Management</h2>
+                        <div class="settlement-status" id="settlement-status">
+                            <span class="status-indicator active"></span>
+                            <span>Auto Settlement Enabled</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CN Settlement Interface -->
+                    <div class="settlement-container cn-only" style="display: block;">
+                        <div class="settlement-card retained">
+                            <div class="settlement-header">
+                                <h3>USDC Retention</h3>
+                                <span class="settlement-badge cn">CN Business</span>
+                            </div>
+                            <div class="settlement-details">
+                                <div class="retention-info">
+                                    <div class="retention-amount">
+                                        <span class="amount-large" id="retained-usdc">$0.00</span>
+                                        <span class="amount-label">USDC Retained</span>
+                                    </div>
+                                    <div class="retention-options">
+                                        <button class="btn btn-secondary" onclick="withdrawUSDC()">
+                                            <i class="fas fa-arrow-down"></i> Withdraw via Ramp
+                                        </button>
+                                        <button class="btn btn-outline" onclick="showView('payment')">
+                                            <i class="fas fa-qrcode"></i> Generate QR
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settlement History -->
+                    <div class="settlement-history">
+                        <h3>Settlement History</h3>
+                        <div class="table-container">
+                            <table class="data-table" id="settlement-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>USDC Amount</th>
+                                        <th>Fee</th>
+                                        <th>Net Amount</th>
+                                        <th>Status</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="settlement-tbody">
+                                    <!-- Settlement history will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loyalty Program Section -->
+            <div id="loyalty-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-gift"></i> Loyalty Program Management</h2>
+                        <div class="loyalty-status" id="loyalty-status">
+                            <span class="status-indicator inactive"></span>
+                            <span>Program Disabled</span>
+                        </div>
+                    </div>
+
+                    <!-- Loyalty Program Overview -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Program Members</h4>
+                                <span class="stat-value" id="loyalty-members">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>$PIZZA SPL Held</h4>
+                                <span class="stat-value" id="total-pizza-held">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Avg Discount Used</h4>
+                                <span class="stat-value" id="avg-discount">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Monthly Savings</h4>
+                                <span class="stat-value" id="monthly-savings">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loyalty Program Configuration -->
+                    <div class="loyalty-program-config">
+                        <div class="config-header">
+                            <h3>Program Configuration</h3>
+                            <div class="loyalty-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="loyalty-program-enabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span>Enable Custom Loyalty Program</span>
+                            </div>
+                        </div>
+
+                        <div class="loyalty-config-content" id="loyalty-config-content" style="display: none;">
+                            <!-- Discount Rules -->
+                            <div class="config-section">
+                                <h4><i class="fas fa-tags"></i> Discount Rules</h4>
+                                <p class="config-description">Set $PIZZA SPL requirements for customer discounts (e.g., 3 $PIZZA SPL = 10% off)</p>
+                                
+                                <div class="discount-rules" id="discount-rules">
+                                    <!-- Default example rule -->
+                                    <div class="rule-item">
+                                        <div class="rule-inputs">
+                                            <input type="number" class="form-input" placeholder="Required $PIZZA SPL" value="3" id="rule-tokens-0">
+                                            <input type="number" class="form-input" placeholder="Discount %" value="10" id="rule-discount-0" min="1" max="50">
+                                            <input type="text" class="form-input" placeholder="Description" value="10% off for holding 3+ $PIZZA SPL" id="rule-desc-0">
+                                            <button class="btn btn-sm btn-outline" onclick="removeDiscountRule(0)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-primary btn-sm" onclick="addDiscountRule()">
+                                    <i class="fas fa-plus"></i> Add Discount Rule
+                                </button>
+                            </div>
+
+                            <!-- Store Credit System -->
+                            <div class="config-section">
+                                <h4><i class="fas fa-money-bill-wave"></i> Store Credit Conversion</h4>
+                                <p class="config-description">Allow customers to convert $PIZZA SPL to store credit (50% redemption rate expected)</p>
+                                
+                                <div class="credit-conversion">
+                                    <div class="conversion-rule">
+                                        <label>Conversion Rate:</label>
+                                        <div class="conversion-inputs">
+                                            <input type="number" id="credit-tokens" class="form-input" value="10" min="1" max="100">
+                                            <span>$PIZZA SPL =</span>
+                                            <span>$</span>
+                                            <input type="number" id="credit-value" class="form-input" value="1.00" min="0.10" max="10.00" step="0.10">
+                                            <span>store credit</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NFT Rewards -->
+                            <div class="config-section">
+                                <h4><i class="fas fa-images"></i> NFT Rewards</h4>
+                                <p class="config-description">Exclusive NFTs for customers holding significant $PIZZA SPL amounts</p>
+                                
+                                <div class="nft-rewards">
+                                    <div class="nft-rule">
+                                        <label>NFT Unlock Requirement:</label>
+                                        <div class="nft-inputs">
+                                            <input type="number" id="nft-requirement" class="form-input" value="20" min="10" max="100">
+                                            <span>$PIZZA SPL</span>
+                                            <input type="text" id="nft-description" class="form-input" value="Exclusive Pizza Lover NFT" placeholder="NFT Description">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Configuration -->
+                        <div class="config-actions" id="loyalty-config-actions" style="display: none;">
+                            <button class="btn btn-success" onclick="saveLoyaltyProgram()">
+                                <i class="fas fa-save"></i> Save Program Configuration
+                            </button>
+                            <button class="btn btn-secondary" onclick="resetLoyaltyProgram()">
+                                <i class="fas fa-undo"></i> Reset to Defaults
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Program Display -->
+                    <div class="active-program" id="active-loyalty-program" style="display: none;">
+                        <h3>Active Loyalty Program</h3>
+                        <div class="program-summary">
+                            <div class="program-rules" id="active-program-rules">
+                                <!-- Active rules will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Activity -->
+                    <div class="loyalty-activity">
+                        <h3>Recent Customer Activity</h3>
+                        <div class="table-container">
+                            <table class="data-table" id="loyalty-activity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>$PIZZA SPL Held</th>
+                                        <th>Discount Used</th>
+                                        <th>Savings</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="loyalty-activity-tbody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <div class="empty-state">
+                                                <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                                                <h5>No Loyalty Activity Yet</h5>
+                                                <p class="text-muted">Customer loyalty activity will appear here once you enable the program.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gift Cards Section -->
+            <div id="gift-cards-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-credit-card"></i> Gift Card Management</h2>
+                        <div class="gift-card-quota">
+                            <span>Monthly Quota: <span id="cards-used">0</span>/100</span>
+                        </div>
+                    </div>
+                    
+                    <div class="gift-cards-grid">
+                        <div class="gift-card-stats">
+                            <div class="stat-item">
+                                <h4>Cards Minted</h4>
+                                <span class="stat-value" id="total-minted">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <h4>Cards Redeemed</h4>
+                                <span class="stat-value" id="total-redeemed">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <h4>Total Cost</h4>
+                                <span class="stat-value" id="total-cost">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="mint-gift-cards">
+                            <h3>Mint New Gift Cards</h3>
+                            <div class="mint-form">
+                                <div class="form-group">
+                                    <label for="card-quantity">Quantity (max 100)</label>
+                                    <input type="number" id="card-quantity" min="1" max="100" value="10" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="custom-message">Custom Message</label>
+                                    <textarea id="custom-message" class="form-textarea" rows="3" 
+                                              placeholder="Thank you for your business!"></textarea>
+                                </div>
+                                <div class="mint-cost">
+                                    <span>Minting Cost: <span id="mint-cost">$5.00</span> (10 × $0.50)</span>
+                                </div>
+                                <button class="btn btn-primary" onclick="mintGiftCards()" id="mint-button">
+                                    <i class="fas fa-plus"></i> Mint Gift Cards
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gift-cards-table">
+                        <h3>Gift Card History</h3>
+                        <div class="table-container">
+                            <table class="data-table" id="gift-cards-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date Minted</th>
+                                        <th>NFT Address</th>
+                                        <th>Value</th>
+                                        <th>Expiry</th>
+                                        <th>Status</th>
+                                        <th>Campaign</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gift-cards-tbody">
+                                    <!-- Gift cards will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment QR Generator Section -->
+            <div id="payment-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-qrcode"></i> Payment QR Code Generator</h2>
+                        <div class="payment-status">
+                            <span class="status-indicator active"></span>
+                            <span>Solana Pay Ready</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-container">
+                        <!-- QR Generator Card -->
+                        <div class="qr-generator-card">
+                            <div class="generator-header">
+                                <h3><i class="fas fa-wallet"></i> Create Payment Request</h3>
+                                <p class="text-muted">Generate Solana Pay QR codes for $15 USDC transactions</p>
+                            </div>
+
+                            <div class="qr-controls">
+                                <div class="form-group">
+                                    <label for="payment-amount">Payment Amount (USDC)</label>
+                                    <input type="number" id="payment-amount" value="15" readonly class="form-input">
+                                    <small class="text-muted">Fixed $15 USDC per transaction</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="payment-memo">Payment Description</label>
+                                    <input type="text" id="payment-memo" class="form-input" placeholder="Pizza payment - Business Name" maxlength="32">
+                                    <small class="text-muted">Custom memo for this payment (optional)</small>
+                                </div>
+
+                                <button class="btn btn-primary" id="generate-qr-btn" onclick="generatePaymentQR()">
+                                    <i class="fas fa-qrcode"></i> Generate Payment QR Code
+                                </button>
+                            </div>
+
+                            <div class="qr-display" id="qr-display">
+                                <div class="qr-placeholder">
+                                    <i class="fas fa-qrcode fa-4x text-muted"></i>
+                                    <h4>Ready to Generate</h4>
+                                    <p class="text-muted">Click the button above to create a Solana Pay QR code</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information -->
+                        <div class="payment-info-section">
+                            <div class="info-card">
+                                <h3><i class="fas fa-info-circle"></i> How Solana Pay Works</h3>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <h4>Customer Scans</h4>
+                                            <p>Customer scans QR code with any Solana wallet</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <h4>Instant Payment</h4>
+                                            <p>$15 USDC transferred directly to your wallet</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <h4>Secure & Verified</h4>
+                                            <p>Blockchain-verified transactions with low fees</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-coins"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <h4>Auto Rewards</h4>
+                                            <p>Customers automatically receive 0.3 $PIZZA SPL</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="supported-wallets">
+                                <h4>Supported Wallets</h4>
+                                <div class="wallet-list">
+                                    <div class="wallet-item">
+                                        <img src="/assets/images/phantom.png" alt="Phantom" onerror="this.style.display='none'">
+                                        <span>Phantom</span>
+                                    </div>
+                                    <div class="wallet-item">
+                                        <img src="/assets/images/solflare.png" alt="Solflare" onerror="this.style.display='none'">
+                                        <span>Solflare</span>
+                                    </div>
+                                    <div class="wallet-item">
+                                        <img src="/assets/images/backpack.png" alt="Backpack" onerror="this.style.display='none'">
+                                        <span>Backpack</span>
+                                    </div>
+                                    <div class="wallet-item">
+                                        <div class="wallet-placeholder">
+                                            <i class="fas fa-wallet"></i>
+                                        </div>
+                                        <span>Any Solana Wallet</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings-section" class="dashboard-section">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-cog"></i> Business Settings</h2>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Business Information</h3>
+                            <div class="settings-form">
+                                <div class="form-group">
+                                    <label>Business Name</label>
+                                    <input type="text" id="business-name-input" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Business Type</label>
+                                    <select id="business-type-input" class="form-select" disabled>
+                                        <option value="CN" selected>CN (Crypto Native)</option>
+                                    </select>
+                                    <small>Contact support to change business type</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact Email</label>
+                                    <input type="email" id="contact-email-input" class="form-input" placeholder="business@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact Phone</label>
+                                    <input type="tel" id="contact-phone-input" class="form-input" placeholder="+1 (555) 123-4567">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Solana Wallet Connection</h3>
+                            <div class="wallet-settings">
+                                <div class="wallet-status" id="wallet-status">
+                                    <div class="wallet-address">
+                                        <label>Connected Wallet Address</label>
+                                        <input type="text" id="wallet-address-display" class="form-input" placeholder="Enter your Solana wallet address">
+                                    </div>
+                                    <div class="wallet-actions">
+                                        <button class="btn btn-primary" onclick="connectWallet()" id="connect-wallet-btn">
+                                            <i class="fas fa-wallet"></i> Connect Phantom Wallet
+                                        </button>
+                                        <button class="btn btn-outline" onclick="disconnectWallet()" id="disconnect-wallet-btn" style="display: none;">
+                                            <i class="fas fa-times"></i> Disconnect
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="wallet-info">
+                                    <small>
+                                        <i class="fas fa-info-circle"></i> 
+                                        Connect your Phantom or Solflare wallet to receive USDC payments directly. 
+                                        This wallet will receive the net payment amount after platform fees.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Loyalty Program</h3>
+                            <div class="loyalty-settings">
+                                <div class="loyalty-toggle">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="loyalty-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span>Enable Custom Loyalty Program</span>
+                                </div>
+                                
+                                <div class="loyalty-config" id="loyalty-config" style="display: none;">
+                                    <h4>Discount Rules</h4>
+                                    <div class="loyalty-rule">
+                                        <input type="number" placeholder="Required $PIZZA SPL" class="form-input">
+                                        <input type="number" placeholder="Discount %" class="form-input">
+                                        <input type="text" placeholder="Description" class="form-input">
+                                        <button class="btn btn-sm btn-primary">Add</button>
+                                    </div>
+                                    
+                                    <h4>Store Credit Conversion</h4>
+                                    <div class="credit-config">
+                                        <label>Conversion Rate</label>
+                                        <input type="number" id="credit-rate" placeholder="10" class="form-input">
+                                        <span>$PIZZA SPL = $1 store credit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Notifications</h3>
+                            <div class="notification-settings">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="transaction-notifications">
+                                    <span>Transaction notifications</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="settlement-notifications">
+                                    <span>Settlement notifications</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="vault-notifications">
+                                    <span>Vault contribution updates</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                        <button class="btn btn-outline" onclick="resetSettings()">
+                            <i class="fas fa-undo"></i> Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="business-dashboard.js?v=20250902"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dashboard
+            initBusinessDashboard();
+            
+            // Add animations
+            const cards = document.querySelectorAll('.stat-card, .chart-container, .vault-card');
+            cards.forEach((card, index) => {
+                card.classList.add('animate-ready');
+                card.style.animationDelay = `${index * 100}ms`;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment QR Generator - Pizza Platform</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/pizza-custom.css">
+    <style>
+        .payment-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .business-info {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .generate-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .qr-section {
+            display: none;
+            text-align: center;
+        }
+        
+        .qr-code-display {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .qr-image {
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .qr-details {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .qr-details p {
+            margin: 5px 0;
+            font-family: monospace;
+        }
+        
+        .payment-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .payment-error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #ff6b2b;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #e55a26;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff6b2b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .fixed-amount-info {
+            background: #e7f3ff;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .fixed-amount-info h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Business Information -->
+        <div class="business-info">
+            <h2 id="business-name">Loading...</h2>
+            <p id="business-type">CN Business</p>
+            <p id="business-category">Restaurant</p>
+        </div>
+        
+        <!-- Fixed Amount Information -->
+        <div class="fixed-amount-info">
+            <h4>💰 Payment Details</h4>
+            <p><strong>Amount:</strong> $15 USDC (Fixed)</p>
+            <p><strong>Customer Reward:</strong> 0.3 $PIZZA SPL</p>
+            <p><strong>Platform Fee:</strong> $0.15 (1%)</p>
+            <p><strong>Vault Contribution:</strong> $0.195 (1.3%)</p>
+            <p><strong>You Receive:</strong> $14.655 USDC</p>
+        </div>
+        
+        <!-- QR Generation Section -->
+        <div id="generate-section" class="generate-section">
+            <h3>Generate Payment QR Code</h3>
+            <p>Customer scans QR with their Phantom/Solflare wallet</p>
+            <button id="generate-qr-btn" class="btn btn-primary">
+                📱 Generate QR Code
+            </button>
+        </div>
+        
+        <!-- QR Code Display Section -->
+        <div id="qr-section" class="qr-section">
+            <h3>Payment QR Code</h3>
+            <p>Customer scans this QR code to pay $15 USDC and receive 0.3 $PIZZA SPL</p>
+            
+            <div id="qr-code-container">
+                <!-- QR code will be displayed here -->
+            </div>
+            
+            <div class="qr-actions">
+                <button id="copy-qr-btn" class="btn btn-secondary">
+                    📋 Copy QR Data
+                </button>
+                <button id="new-qr-btn" class="btn btn-primary">
+                    🔄 New QR Code
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="loading-indicator">
+            <div class="loading-spinner"></div>
+            <p id="loading-message">Generating QR Code...</p>
+        </div>
+        
+        <!-- Alert Messages -->
+        <div id="success-container" class="alert alert-success">
+            <span id="success-message"></span>
+        </div>
+        
+        <div id="error-container" class="alert alert-error">
+            <span id="error-message"></span>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h4>📋 How It Works</h4>
+            <ol>
+                <li>Click "Generate QR Code" to create a payment request</li>
+                <li>Customer scans QR with Phantom/Solflare wallet</li>
+                <li>Customer pays $15 USDC and automatically receives 0.3 $PIZZA SPL</li>
+                <li>You receive $14.655 USDC (after platform fees)</li>
+                <li>Payment is confirmed on Solana blockchain</li>
+            </ol>
+            
+            <h4>💡 Benefits</h4>
+            <ul>
+                <li>No customer accounts required</li>
+                <li>Instant USDC settlement</li>
+                <li>Automatic reward distribution</li>
+                <li>Low Solana network fees</li>
+            </ul>
+        </div>
+        
+        <!-- Navigation -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="business-dashboard.html" class="btn btn-secondary">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <script src="vendor-payment.js"></script>
+</body>
+</html>
+

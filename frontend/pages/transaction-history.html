@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - Pizza Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --pizza-orange: #ff6b35;
+            --pizza-red: #d32f2f;
+            --pizza-green: #66bb6a;
+            --pizza-blue: #42a5f5;
+            --pizza-purple: #ab47bc;
+        }
+        
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+            padding: 1rem 0;
+        }
+        
+        .history-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--pizza-blue), var(--pizza-purple));
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .transaction-item {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .transaction-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--transaction-color, #e9ecef);
+        }
+        
+        .transaction-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .transaction-payment {
+            --transaction-color: var(--pizza-orange);
+        }
+        
+        .transaction-reward {
+            --transaction-color: var(--pizza-green);
+        }
+        
+        .transaction-swap {
+            --transaction-color: var(--pizza-blue);
+        }
+        
+        .transaction-gift {
+            --transaction-color: var(--pizza-purple);
+        }
+        
+        .transaction-investment {
+            --transaction-color: #ffc107;
+        }
+        
+        .transaction-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            margin-right: 1rem;
+        }
+        
+        .transaction-details {
+            flex-grow: 1;
+        }
+        
+        .transaction-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .transaction-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f3f4;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-confirmed {
+            background: rgba(102, 187, 106, 0.1);
+            color: var(--pizza-green);
+        }
+        
+        .status-pending {
+            background: rgba(255, 183, 77, 0.1);
+            color: #ff8f00;
+        }
+        
+        .status-failed {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+        
+        .export-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .pagination-custom {
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .page-link {
+            border-radius: 8px;
+            margin: 0 0.25rem;
+            color: var(--pizza-orange);
+            border-color: #e9ecef;
+        }
+        
+        .page-link:hover {
+            background-color: rgba(255, 107, 53, 0.1);
+            border-color: var(--pizza-orange);
+        }
+        
+        .page-link.active {
+            background-color: var(--pizza-orange);
+            border-color: var(--pizza-orange);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box .form-control {
+            padding-left: 2.5rem;
+        }
+        
+        .search-box .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .date-range-picker {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .transaction-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .transaction-amount {
+                text-align: left;
+                margin-top: 0.5rem;
+            }
+            
+            .transaction-meta {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand text-white">
+                <i class="fas fa-pizza-slice me-2"></i>
+                <strong>Transaction History</strong>
+            </div>
+            <div>
+                <button class="btn btn-outline-light btn-sm me-2" onclick="goBack()">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </button>
+                <button class="btn btn-outline-light btn-sm" onclick="refreshTransactions()">
+                    <i class="fas fa-sync me-1"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Statistics Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="totalTransactions">0</div>
+                    <div>Total Transactions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, var(--pizza-green), #4caf50);">
+                    <div class="stats-value" id="totalVolume">$0</div>
+                    <div>Total Volume</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));">
+                    <div class="stats-value" id="totalRewards">0</div>
+                    <div>$PIZZA SPL Earned</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, var(--pizza-purple), #9c27b0);">
+                    <div class="stats-value" id="successRate">0%</div>
+                    <div>Success Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Chart -->
+        <div class="history-card">
+            <h5><i class="fas fa-chart-line me-2"></i>Transaction Analytics</h5>
+            <div class="chart-container">
+                <canvas id="transactionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="form-control" id="searchInput" 
+                               placeholder="Search by business, amount, or transaction ID">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="typeFilter">
+                        <option value="">All Types</option>
+                        <option value="payment">Payments</option>
+                        <option value="reward_distribution">Rewards</option>
+                        <option value="pizza_spl_swap">Token Swaps</option>
+                        <option value="gift_card_mint">Gift Cards</option>
+                        <option value="investment_token_conversion">Investment Tokens</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="date-range-picker">
+                        <input type="date" class="form-control" id="startDate">
+                        <span class="text-muted">to</span>
+                        <input type="date" class="form-control" id="endDate">
+                        <button class="btn btn-outline-primary" onclick="applyDateFilter()">
+                            <i class="fas fa-calendar"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="clearFilters()">
+                        <i class="fas fa-times me-1"></i> Clear Filters
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="saveFilters()">
+                        <i class="fas fa-bookmark me-1"></i> Save Filter Preset
+                    </button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <select class="form-select d-inline-block w-auto" id="sortBy">
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                        <option value="amount-desc">Highest Amount</option>
+                        <option value="amount-asc">Lowest Amount</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-section">
+            <h6 class="mb-3"><i class="fas fa-download me-2"></i>Export Options</h6>
+            <button class="btn btn-outline-primary me-2" onclick="exportCSV()">
+                <i class="fas fa-file-csv me-1"></i> Export CSV
+            </button>
+            <button class="btn btn-outline-success me-2" onclick="exportPDF()">
+                <i class="fas fa-file-pdf me-1"></i> Export PDF
+            </button>
+            <button class="btn btn-outline-info" onclick="generateTaxReport()">
+                <i class="fas fa-calculator me-1"></i> Tax Report
+            </button>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="history-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5><i class="fas fa-list me-2"></i>Transaction History</h5>
+                <div>
+                    <span id="resultCount" class="text-muted small">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Loading Skeleton -->
+            <div id="loadingSkeletons" style="display: none;">
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+                <div class="loading-skeleton"></div>
+            </div>
+            
+            <!-- Transaction Items -->
+            <div id="transactionList">
+                <!-- Transactions will be loaded here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <h5>No Transactions Found</h5>
+                <p>Try adjusting your filters or make your first payment to see transactions here.</p>
+                <button class="btn btn-primary" onclick="makePayment()">
+                    <i class="fas fa-plus me-2"></i> Make First Payment
+                </button>
+            </div>
+            
+            <!-- Pagination -->
+            <nav aria-label="Transaction pagination" id="paginationNav" style="display: none;">
+                <ul class="pagination pagination-custom" id="pagination">
+                    <!-- Pagination items will be generated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div class="modal fade" id="transactionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-receipt me-2"></i>Transaction Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="transactionDetails">
+                    <!-- Transaction details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="viewOnExplorer()">
+                        <i class="fas fa-external-link-alt me-2"></i>View on Solana Explorer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js"></script>
+    <script>
+        const apiBase = 'http://localhost:7000/api';
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {};
+        let transactionChart = null;
+        let selectedTransactionId = null;
+
+        class TransactionHistory {
+            constructor() {
+                this.userToken = localStorage.getItem('userToken') || 
+                               localStorage.getItem('businessToken') || 
+                               localStorage.getItem('adminToken');
+                this.userType = this.determineUserType();
+                this.init();
+            }
+
+            determineUserType() {
+                if (localStorage.getItem('adminToken')) return 'admin';
+                if (localStorage.getItem('businessToken')) return 'business';
+                return 'customer';
+            }
+
+            async init() {
+                if (!this.userToken) {
+                    alert('Please log in to view transaction history');
+                    this.goBack();
+                    return;
+                }
+
+                this.initializeEventHandlers();
+                this.initializeChart();
+
+                    await this.loadStatistics();
+                    await this.loadTransactions();
+                
+            }
+
+            initializeEventHandlers() {
+                // Search input
+                document.getElementById('searchInput').addEventListener('input', 
+                    this.debounce(() => this.applyFilters(), 500));
+
+                // Filter selectors
+                ['typeFilter', 'statusFilter', 'sortBy'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => this.applyFilters());
+                });
+
+                // Set default date range (last 30 days)
+                const today = new Date();
+                const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+                
+                document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            }
+
+            initializeChart() {
+                const ctx = document.getElementById('transactionChart').getContext('2d');
+                
+                this.transactionChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Daily Volume ($)',
+                            data: [],
+                            borderColor: '#ff6b35',
+                            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Transaction Count',
+                            data: [],
+                            borderColor: '#42a5f5',
+                            backgroundColor: 'rgba(66, 165, 245, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+            async loadStatistics() {
+                try {
+                    const endpoint = this.userType === 'admin' ? '/admin/transactions/stats' :
+                                   this.userType === 'business' ? '/business/analytics' :
+                                   '/blockchain/transactions/stats';
+
+                    const response = await this.makeRequest(endpoint);
+                    
+                    document.getElementById('totalTransactions').textContent = response.totalTransactions || 0;
+                    document.getElementById('totalVolume').textContent = '$' + (response.totalVolume || 0).toLocaleString();
+                    document.getElementById('totalRewards').textContent = (response.totalRewards || 0).toFixed(1);
+                    document.getElementById('successRate').textContent = ((response.successRate || 0) * 100).toFixed(1) + '%';
+
+                    // Update chart with daily data
+                    if (response.dailyData) {
+                        this.updateChart(response.dailyData);
+                    }
+
+                } catch (error) {
+                    console.error('Error loading statistics:', error);
+                }
+            }
+
+            async loadTransactions() {
+                this.showLoading(true);
+
+                try {
+                    const params = new URLSearchParams({
+                        page: currentPage,
+                        limit: 20,
+                        ...this.getFilters()
+                    });
+
+                    const endpoint = this.userType === 'admin' ? '/admin/transactions' :
+                                   this.userType === 'business' ? '/business/transactions' :
+                                   '/blockchain/transactions';
+
+                    const response = await this.makeRequest(`${endpoint}?${params}`);
+                    
+                    this.renderTransactions(response.transactions || []);
+                    this.updatePagination(response.pagination || {});
+                    
+                    const totalResults = response.pagination?.total || 0;
+                    document.getElementById('resultCount').textContent = 
+                        `Showing ${response.transactions?.length || 0} of ${totalResults} transactions`;
+
+                } catch (error) {
+                    console.error('Error loading transactions:', error);
+                    this.showEmptyState();
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            renderTransactions(transactions) {
+                const container = document.getElementById('transactionList');
+                
+                if (transactions.length === 0) {
+                    this.showEmptyState();
+                    return;
+                }
+
+                container.innerHTML = transactions.map(tx => this.renderTransactionItem(tx)).join('');
+                document.getElementById('emptyState').style.display = 'none';
+            }
+
+            renderTransactionItem(tx) {
+                const typeInfo = this.getTransactionTypeInfo(tx.type);
+                const statusClass = this.getStatusClass(tx.status);
+                const amountDisplay = this.getAmountDisplay(tx);
+
+                return `
+                    <div class="transaction-item ${typeInfo.class}" onclick="showTransactionDetails('${tx.signature}')">
+                        <div class="transaction-header">
+                            <div class="d-flex align-items-center">
+                                <div class="transaction-icon" style="background: ${typeInfo.color}">
+                                    <i class="${typeInfo.icon}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h6 class="mb-1">${typeInfo.title}</h6>
+                                    <p class="text-muted mb-0 small">${this.getTransactionDescription(tx)}</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount">
+                                <div class="${amountDisplay.class}">${amountDisplay.amount}</div>
+                                <span class="status-badge ${statusClass}">${tx.status}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="transaction-meta">
+                            <div>
+                                <strong>Date:</strong><br>
+                                ${new Date(tx.createdAt).toLocaleDateString()}
+                            </div>
+                            <div>
+                                <strong>Time:</strong><br>
+                                ${new Date(tx.createdAt).toLocaleTimeString()}
+                            </div>
+                            <div>
+                                <strong>ID:</strong><br>
+                                <code class="small">${tx.signature.substring(0, 10)}...</code>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getTransactionTypeInfo(type) {
+                const types = {
+                    'payment': {
+                        title: 'Payment',
+                        icon: 'fas fa-credit-card',
+                        color: '#ff6b35',
+                        class: 'transaction-payment'
+                    },
+                    'reward_distribution': {
+                        title: 'Reward Received',
+                        icon: 'fas fa-gift',
+                        color: '#66bb6a',
+                        class: 'transaction-reward'
+                    },
+                    'pizza_spl_swap': {
+                        title: 'Token Swap',
+                        icon: 'fas fa-exchange-alt',
+                        color: '#42a5f5',
+                        class: 'transaction-swap'
+                    },
+                    'gift_card_mint': {
+                        title: 'Gift Card',
+                        icon: 'fas fa-ticket-alt',
+                        color: '#ab47bc',
+                        class: 'transaction-gift'
+                    },
+                    'investment_token_conversion': {
+                        title: 'Investment Token',
+                        icon: 'fas fa-coins',
+                        color: '#ffc107',
+                        class: 'transaction-investment'
+                    }
+                };
+
+                return types[type] || {
+                    title: 'Transaction',
+                    icon: 'fas fa-receipt',
+                    color: '#6c757d',
+                    class: 'transaction-other'
+                };
+            }
+
+            getStatusClass(status) {
+                const classes = {
+                    'confirmed': 'status-confirmed',
+                    'pending': 'status-pending',
+                    'failed': 'status-failed'
+                };
+                return classes[status] || 'status-pending';
+            }
+
+            getAmountDisplay(tx) {
+                if (tx.type === 'payment') {
+                    return { amount: '-$15.00', class: 'text-danger' };
+                } else if (tx.type === 'reward_distribution') {
+                    return { amount: '+0.3 $PIZZA', class: 'text-success' };
+                } else if (tx.amount) {
+                    return { amount: '$' + tx.amount.toFixed(2), class: '' };
+                }
+                return { amount: '—', class: 'text-muted' };
+            }
+
+            getTransactionDescription(tx) {
+                if (tx.businessId?.businessName) {
+                    return `Payment to ${tx.businessId.businessName}`;
+                } else if (tx.type === 'reward_distribution') {
+                    return 'Pizza Platform reward distribution';
+                } else if (tx.type === 'gift_card_mint') {
+                    return 'Gift card received';
+                }
+                return 'Pizza Platform transaction';
+            }
+
+            showLoading(show) {
+                document.getElementById('loadingSkeletons').style.display = show ? 'block' : 'none';
+                document.getElementById('transactionList').style.display = show ? 'none' : 'block';
+            }
+
+            showEmptyState() {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('transactionList').innerHTML = '';
+                document.getElementById('paginationNav').style.display = 'none';
+            }
+
+            getFilters() {
+                return {
+                    search: document.getElementById('searchInput').value,
+                    type: document.getElementById('typeFilter').value,
+                    status: document.getElementById('statusFilter').value,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    sortBy: document.getElementById('sortBy').value
+                };
+            }
+
+            applyFilters() {
+                currentPage = 1;
+                this.loadTransactions();
+            }
+
+            updateChart(dailyData) {
+                if (!this.transactionChart || !dailyData) return;
+
+                const labels = dailyData.map(d => new Date(d.date).toLocaleDateString());
+                const volumes = dailyData.map(d => d.volume);
+                const counts = dailyData.map(d => d.count);
+
+                this.transactionChart.data.labels = labels;
+                this.transactionChart.data.datasets[0].data = volumes;
+                this.transactionChart.data.datasets[1].data = counts;
+                this.transactionChart.update();
+            }
+
+            updatePagination(pagination) {
+                totalPages = pagination.totalPages || 1;
+                const paginationEl = document.getElementById('pagination');
+                const navEl = document.getElementById('paginationNav');
+
+                if (totalPages <= 1) {
+                    navEl.style.display = 'none';
+                    return;
+                }
+
+                navEl.style.display = 'block';
+                paginationEl.innerHTML = this.generatePaginationHTML(pagination);
+            }
+
+            generatePaginationHTML(pagination) {
+                let html = '';
+                const current = currentPage;
+                const total = totalPages;
+
+                // Previous button
+                html += `<li class="page-item ${current === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${current - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>`;
+
+                // Page numbers
+                for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+                    html += `<li class="page-item ${i === current ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>`;
+                }
+
+                // Next button
+                html += `<li class="page-item ${current === total ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${current + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>`;
+
+                return html;
+            }
+
+            async makeRequest(endpoint, method = 'GET', data = null) {
+                const config = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.userToken}`
+                    }
+                };
+
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(apiBase + endpoint, config);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    throw new Error(errorData?.error || `HTTP ${response.status}`);
+                }
+
+                return response.json();
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+        }
+
+        // Global functions for onclick handlers
+        let historyInstance;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            historyInstance = new TransactionHistory();
+        });
+
+        function changePage(page) {
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                historyInstance.loadTransactions();
+            }
+        }
+
+        function goBack() {
+            // Determine where to go back based on user type
+            const userType = historyInstance?.userType;
+            
+            if (userType === 'admin') {
+                window.location.href = 'platform-admin-dashboard.html';
+            } else if (userType === 'business') {
+                const businessType = localStorage.getItem('businessType');
+                const dashboardUrl = 'cn-business-dashboard.html';
+                window.location.href = dashboardUrl;
+            } else {
+                window.location.href = 'customer-wallet.html';
+            }
+        }
+
+        function refreshTransactions() {
+            if (historyInstance) {
+                historyInstance.loadTransactions();
+                historyInstance.loadStatistics();
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('sortBy').value = 'date-desc';
+            
+            // Reset dates to last 30 days
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            
+            if (historyInstance) {
+                historyInstance.applyFilters();
+            }
+        }
+
+        function applyDateFilter() {
+            if (historyInstance) {
+                historyInstance.applyFilters();
+            }
+        }
+
+        function saveFilters() {
+            alert('Filter preset saved! (Feature coming soon)');
+        }
+
+        function exportCSV() {
+            alert('Exporting to CSV... (Feature implementation in progress)');
+        }
+
+        function exportPDF() {
+            alert('Exporting to PDF... (Feature implementation in progress)');
+        }
+
+        function generateTaxReport() {
+            alert('Generating tax report... (Feature implementation in progress)');
+        }
+
+        function makePayment() {
+            window.location.href = 'customer-wallet.html';
+        }
+
+        function showTransactionDetails(signature) {
+            selectedTransactionId = signature;
+            
+            // Mock transaction details - in real implementation, would fetch from API
+            const details = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Transaction Information</h6>
+                        <p><strong>Signature:</strong><br><code class="small">${signature}</code></p>
+                        <p><strong>Type:</strong> Payment</p>
+                        <p><strong>Status:</strong> <span class="status-badge status-confirmed">Confirmed</span></p>
+                        <p><strong>Amount:</strong> $15.00 USDC</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Network Details</h6>
+                        <p><strong>Network:</strong> Solana Mainnet</p>
+                        <p><strong>Block:</strong> 186,234,567</p>
+                        <p><strong>Fee:</strong> 0.000005 SOL</p>
+                        <p><strong>Confirmations:</strong> 142,356</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Rewards & Fees</h6>
+                        <div class="alert alert-success">
+                            <i class="fas fa-gift me-2"></i>
+                            <strong>Reward Earned:</strong> 0.3 $PIZZA SPL tokens
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Platform Fee:</strong> $0.15 (1% for CN business)<br>
+                            <strong>Vault Contribution:</strong> $0.195 (1.3% to unified platform vault)
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('transactionDetails').innerHTML = details;
+            
+            const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+            modal.show();
+        }
+
+        function viewOnExplorer() {
+            if (selectedTransactionId) {
+                window.open(`https://explorer.solana.com/tx/${selectedTransactionId}`, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>

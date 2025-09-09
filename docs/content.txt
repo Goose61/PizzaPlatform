@@ -1,0 +1,113 @@
+1. User & Wallet Layer
+Onboarding: KYC: Ramp ($0.50/customer, $273.75/year/business for 547.5 customers) for $PIZZA conversions (10 $PIZZA SPL + $0.10 = 1 $PIZZA, 1M cap). MoonPay backup ($0.50/customer). AML/CTF, BSA, USA PATRIOT Act, Canadian compliance.
+Authentication: 2FA (SMS/email), JWT for session management.
+Wallet: Non-custodial Solana wallet (Phantom, Solflare) for $PIZZA SPL, gift card NFTs, USDC. Optional custodial wallet via Ramp for NCN vendors.
+
+Token Acquisition:Buy $PIZZA SPL or USDC via Ramp (ACH: 0.1%, cards: 2–3%) or DEXs (Raydium, Jupiter, 0.75% swap loss: $1 = $0.9925 USDC).
+Initial treasury seeds 2,000 $PIZZA SPL ($1,000, 0.01 SOL at SOL = $50).
+
+
+
+2. Payment Flow
+Point of Sale:$15 USDC via Solana Pay (QR scan, $0.00025/transfer).
+NCN: 1.45% fee ($0.2175) to platform, 1.3% vault ($0.195) to platform vault, $14.5875 to vendor wallet (converted to fiat).
+CN: 1% fee ($0.15), 1.3% vault ($0.195), $14.655 USDC to vendor wallet.
+
+Atomic Swap:$PIZZA SPL payments swapped to USDC via Jupiter (0.75% loss), ensuring merchant stability.
+
+Payout:NCN: Daily $1,500 USDC to $1,479 fiat via Ramp (0.1% fee, $1.50, split $0.75; $19.50 vault).
+CN: USDC retained or withdrawn via Ramp/MoonPay.
+
+
+
+3. Rewards & Loyalty
+Customer Rewards:0.3 $PIZZA SPL per $15 ($0.30 perceived: $0.10 monetary, $0.20 non-monetary; $0.15 cost: $0.10 monetary, $0.05 non-monetary).
+Funded by vault ($0.195), covering $0.13151 ($0.10 + $0.015 + $0.01644 gift card).
+
+Gift Cards:1,200/year/business (100/month, 5 $PIZZA SPL, $0.50 minting, $600 cost, $300 net after 50% unused, vendor-funded).
+50% redeemed (new accounts), 50% used ($600 redemption, vault-funded).
+Unused (30 days) or inactive (2 years) revert to treasury.
+
+Perks:Hold $PIZZA SPL for discounts (e.g., 3 $PIZZA SPL = 10% off) or NFTs (20 $PIZZA SPL = exclusive NFT), defined by merchants.
+
+CN Staking:Optional: CN vendors stake $7,117.50 vault via Kamino (4% APY, $238.14: $119.07 dividends, $119.07 platform rewards).
+
+Platform Vault:All vendors contribute 1.3% ($0.195, $7,117.50/year) to platform vault, funding rewards ($4,797.44), gift cards ($600), with $2,320.06 surplus.
+Merchants customize loyalty (e.g., 10 $PIZZA SPL = $1 credit, 50% redemption).
+
+$PIZZA Investment Tokens:10% of customers convert (328.50 $PIZZA SPL/business, $32.85 cost). Governance: 1 $PIZZA = 1 vote.
+
+
+
+4. Admin & Analytics
+Dashboard:Admin interface (JWT, 2FA) manages users, vaults, accounts. NCN: fiat deposit logs ($1,479/day); CN: USDC, vaults ($7,117.50), dividends ($119.07).
+Optional merchant dashboard ($10,000) for loyalty customization (e.g., set 10% discount for 3 $PIZZA SPL).
+
+Analytics:Sales ($547,500/business), $PIZZA SPL (10,950/business), gift card ROI ($300 savings), staking yields ($238.14/CN).
+Optional Telegram bot ($1,000) for customer spending insights.
+
+
+
+5. Security & Compliance
+Authentication: JWT, 2FA, session timeouts.
+KYC/AML:Ramp ($0.50/customer, $273.75 for 547.5 customers), MoonPay backup. 5-year records, suspicious activity reporting.
+
+Logging: Audit trail for payments, swaps, KYC, vaults.
+Security: Outsourced contracts, optional CertiK audit ($20,000), multi-sig treasury.
+Compliance: MSB ($5,000), AML ($5,000), GENIUS Act (no issuer yields).
+
+
+
+6. Fiat On/Off-Ramps
+On-Ramp: Ramp (ACH: 0.1%, cards: 2–3%) or DEXs for USDC/$PIZZA SPL.
+Off-Ramp: NCN: $1,500 to $1,479 fiat via Ramp (0.1%, $1.50, split $0.75). CN: USDC via Ramp/MoonPay. MoonPay backup (0.1%).
+Redundancy: MoonPay ensures uptime.
+
+System Flow Diagram
+
+graph TD
+    A[User] -->|KYC ($0.50, Ramp/MoonPay), 2FA| B[Frontend]
+    B -->|Buy USDC/$PIZZA SPL| C[Wallet]
+    C -->|$15 USDC| D[Backend]
+    D -->|NCN: 1.45% ($0.2175), 1.3% Vault ($0.195)| E[Platform]
+    D -->|CN: 1% ($0.15), 1.3% Vault ($0.195)| E
+    D -->|Swap $PIZZA SPL to USDC (Jupiter)| F[Business Wallet]
+    F -->|NCN: $1,500| G[Ramp/MoonPay: 0.1% ($1.50)]
+    G -->|$1,479 Fiat| H[Bank]
+    G -->|$19.50 Vault| I[Platform Vault]
+    F -->|CN: $7,117.50 Vault| J[Optional Kamino Staking: $119.07 Dividends/Platform]
+    D -->|0.3 $PIZZA SPL ($0.15 Cost)| C
+    F -->|Gift Card: 5 $PIZZA SPL ($0.50)| K[Gift Card]
+    K -->|50% Unused| I
+    K -->|50% Redeemed| L[New User Account]
+    L -->|Unused 30 Days/Inactive 2 Years| I
+    C -->|Hold $PIZZA SPL for Perks| M[Merchant Loyalty: Discounts, NFTs]
+    C -->|Convert 10 $PIZZA SPL| N[$PIZZA Investment Token]
+    N -->|KYC (Ramp/MoonPay)| G
+    E -->|Dashboard, Analytics| O[Admin]
+
+
+Key Engineering Principles
+Atomicity: Jupiter swaps $PIZZA SPL to USDC, ensuring merchant stability.
+DEX Aggregation: Jupiter optimizes swap prices (0.75% loss).
+Unified Vault: Single platform vault ($7,117.50/business), CN optional staking, funds rewards.
+Scalability: Solana’s 65,000 TPS supports 1,000 transactions/day.
+Security: 2FA, JWT, audit logging, Ramp/MoonPay KYC, optional audit.
+Compliance: MSB, AML, GENIUS Act-compliant.
+
+Incentive Alignment
+Customers: USDC payments, 0.3 $PIZZA SPL ($0.30), gift cards ($5 perceived), perks via holding (e.g., 10% discount).
+Businesses: NCN: $1,479 fiat, $307.79 savings; CN: $14.655 USDC, $119.07 dividends, $3,773.93 savings. Customizable loyalty (e.g., $1 credit/10 $PIZZA SPL).
+Platform: Fees (1.45%/1%), gift cards ($300), staking ($119.07/CN), $19,361.35 profit, $23,200.60 surplus.
+
+Financials (10 Partners)Startup Costs: $26,500 (Ramp: $7,000, MoonPay: $2,000, Solana: $7,500, legal: $10,000).
+Revenue: $72,653.20 (NCN: $42,587.50, CN: $30,065.70).
+Costs: $53,291.85 (NCN: $38,860.35, CN: $10,783.35, features: $3,750).
+Profit: $19,361.35 (recovers $26,500 in ~16 months).
+Vendor Costs:NCN: $16,117.25 ($307.79 savings vs. Stripe’s $16,425).
+CN: $12,651.07 ($3,773.93 savings).
+
+Rewards: 109,500 $PIZZA SPL ($47,974.40 cost, $109,500 perceived), funded by $71,175 vaults + $595.35 CN yields.
+Treasury: 48,285 $PIZZA SPL ($48,285 perceived).
+Surplus: $23,200.60.
+

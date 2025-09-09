@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Login - Pizza Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LdRbK0rAAAAAHBgxTc03a4BZUSlgKov80DRhM7H" async defer></script>
+    <style>
+        :root {
+            --pizza-orange: #ff6b35;
+            --pizza-red: #d32f2f;
+            --pizza-blue: #42a5f5;
+            --pizza-purple: #ab47bc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .business-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .login-button {
+            background: linear-gradient(135deg, var(--pizza-orange), var(--pizza-red));
+            border: none;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 10px;
+            width: 100%;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .business-type-selector {
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .business-type-option {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .business-type-option:hover {
+            border-color: var(--pizza-orange);
+            transform: translateY(-2px);
+        }
+        
+        .business-type-option.selected {
+            border-color: var(--pizza-orange);
+            background: rgba(255, 107, 53, 0.1);
+        }
+        
+        .business-type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .cn-option {
+            background: linear-gradient(135deg, rgba(66, 165, 245, 0.1), rgba(171, 71, 188, 0.1));
+        }
+        
+        
+        .form-control:focus {
+            border-color: var(--pizza-orange);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .feature-comparison {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="business-logo">
+                <i class="fas fa-building"></i>
+            </div>
+            
+            <h2 class="text-center mb-2">Business Portal</h2>
+            <p class="text-center text-muted mb-4">Access your Pizza Platform business dashboard</p>
+            
+            <!-- Business Type Info -->
+            <div class="business-type-selector">
+                <h6 class="mb-3 text-center">Crypto Native Business Portal</h6>
+                
+                <div class="business-type-option cn-option selected">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-coins fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">CN Business</h6>
+                            <small class="text-muted">Crypto Native - USDC retention, 1% + 1.3% fees, Kamino staking</small>
+                        </div>
+                        <div class="ms-2">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-comparison">
+                    <div class="text-center">
+                        <strong>CN Benefits:</strong>
+                        <br>• USDC retention capability
+                        <br>• 4% Kamino staking APY
+                        <br>• Custom loyalty programs
+                        <br>• Advanced DeFi integration
+                        <br>• Lower platform fees (1% vs 1.45%)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="businessLoginForm">
+                <div class="mb-3">
+                    <label for="businessEmail" class="form-label">Business Email</label>
+                    <input type="email" class="form-control" id="businessEmail" required 
+                           placeholder="business@example.com">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="businessPassword" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="businessPassword" required
+                           placeholder="Enter your password">
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberBusiness">
+                    <label class="form-check-label" for="rememberBusiness">
+                        Remember this device
+                    </label>
+                </div>
+                
+                <!-- reCAPTCHA v3 Enterprise (invisible) -->
+                
+                <button type="submit" class="login-button" id="loginButton">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login to Business Dashboard
+                </button>
+            </form>
+            
+            <div class="text-center mb-3">
+                <small class="text-muted">
+                    Need an account? <a href="#" onclick="showRegistrationInfo()">Register your business</a>
+                    <br><a href="#" onclick="showPasswordReset()">Forgot password?</a>
+                </small>
+            </div>
+            
+            
+        </div>
+        
+        <!-- Loading Modal -->
+        <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div>
+                            <strong>Logging in...</strong>
+                            <br><small class="text-muted">Verifying business credentials</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Registration Info Modal -->
+        <div class="modal fade" id="registrationModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-building me-2"></i> Business Registration
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Business Registration Process</strong>
+                        </div>
+                        
+                        <h6>Required Information:</h6>
+                        <ul>
+                            <li>Business name and legal structure</li>
+                            <li>Tax ID and business license</li>
+                            <li>Owner/operator contact information</li>
+                            <li>Business category (Restaurant, Retail, etc.)</li>
+                            <li>Business type: CN (Crypto Native)</li>
+                        </ul>
+                        
+                        <h6 class="mt-3">Verification Process:</h6>
+                        <ol>
+                            <li>Submit business documentation</li>
+                            <li>Platform admin review (24-48 hours)</li>
+                            <li>Business verification approval</li>
+                            <li>Dashboard access granted</li>
+                        </ol>
+                        
+                        <div class="alert alert-success mt-3">
+                            <i class="fas fa-gift me-2"></i>
+                            <strong>Launch Bonus:</strong> First 10 businesses get reduced fees for 6 months!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="contactForRegistration()">
+                            <i class="fas fa-envelope me-2"></i> Contact for Registration
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../config.js"></script>
+    <script src="../assets/js/email-verification.js"></script>
+    <script>
+        const apiBase = window.API_BASE + '/api';
+        const selectedBusinessType = 'CN'; // All businesses are CN now
+        let recaptchaSiteKey = null;
+
+        // Get reCAPTCHA site key from backend
+        async function loadRecaptchaConfig() {
+            try {
+                const response = await fetch(`${apiBase}/config/recaptcha`);
+                if (response.ok) {
+                    const config = await response.json();
+                    recaptchaSiteKey = config.siteKey;
+                    console.log('reCAPTCHA Enterprise v3 configured');
+                } else {
+                    console.warn('Could not load reCAPTCHA configuration');
+                    // Use fallback site key
+                    recaptchaSiteKey = '6LdRbK0rAAAAAHBgxTc03a4BZUSlgKov80DRhM7H';
+                }
+            } catch (error) {
+                console.error('Error loading reCAPTCHA config:', error);
+                // Use fallback site key
+                recaptchaSiteKey = '6LdRbK0rAAAAAHBgxTc03a4BZUSlgKov80DRhM7H';
+            }
+        }
+
+        // Form submission
+        document.getElementById('businessLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            let recaptchaToken = null;
+            
+            // Try to generate reCAPTCHA token, but make it optional in development
+            if (recaptchaSiteKey && typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+                try {
+                    recaptchaToken = await grecaptcha.enterprise.execute(recaptchaSiteKey, {
+                        action: 'LOGIN'
+                    });
+                    
+                    if (recaptchaToken) {
+                        console.log('reCAPTCHA v3 token generated for LOGIN action');
+                    }
+                } catch (recaptchaError) {
+                    console.warn('reCAPTCHA error (continuing anyway):', recaptchaError);
+                    // Continue without reCAPTCHA in development
+                }
+            } else {
+                console.warn('reCAPTCHA not available, continuing without verification');
+            }
+            
+            const email = document.getElementById('businessEmail').value;
+            const password = document.getElementById('businessPassword').value;
+            
+            // Show loading modal
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();
+            
+            try {
+                const response = await fetch(`${apiBase}/business/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        password,
+                        recaptchaToken: recaptchaToken
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    // Store authentication
+                    localStorage.setItem('businessToken', data.token);
+                    localStorage.setItem('businessEmail', email);
+                    localStorage.setItem('businessType', 'CN');
+                    localStorage.setItem('businessId', data.businessId);
+                    
+                    // Redirect to unified business dashboard
+                    const dashboardUrl = 'business-dashboard.html';
+                    
+                    setTimeout(() => {
+                        window.location.href = dashboardUrl;
+                    }, 1000);
+                    
+                } else {
+                    loadingModal.hide();
+                    alert('Login failed: ' + (data.error || 'Invalid credentials'));
+                }
+                
+            } catch (error) {
+                loadingModal.hide();
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+
+        function showRegistrationInfo() {
+            const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+            modal.show();
+        }
+
+        function contactForRegistration() {
+            window.open('mailto:business@pizzaplatform.com?subject=Business Registration Inquiry&body=Hello, I would like to register my business for the Pizza Platform. Please send me the registration form and requirements.', '_blank');
+        }
+
+        function showPasswordReset() {
+            const email = prompt('Enter your business email address for password reset:');
+            if (email) {
+                alert('Password reset instructions have been sent to ' + email);
+                // In real implementation, would call password reset API
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load reCAPTCHA configuration
+            await loadRecaptchaConfig();
+            
+            // Initialize email validation for business email input
+            const emailInput = document.getElementById('businessEmail');
+            if (emailInput) {
+                const emailValidator = new EmailInputValidator(emailInput, {
+                    validateOnBlur: true,
+                    validateOnType: false, // Don't validate while typing for better UX
+                    showSuggestions: true
+                });
+                
+                console.log('✅ Email validation initialized for business login');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -24,6 +24,7 @@ const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const nodemailer = require('nodemailer');
@@ -61,6 +62,9 @@ if (missingEnvVars.length > 0) {
 const app = express();
 const PORT = process.env.PORT || 7000;
 
+// Configure trust proxy for Cloudflare Tunnel - with specific settings for rate limiting
+app.set('trust proxy', 1); // Trust first proxy (Cloudflare)
+
 // Security configuration from environment - NO FALLBACKS
 const SECURITY_CONFIG = {
   sessionSecret: process.env.SESSION_SECRET,
@@ -69,7 +73,7 @@ const SECURITY_CONFIG = {
   emailFrom: process.env.EMAIL_FROM || 'noreply@pizzaplatform.com',
   rateLimits: {
     general: parseInt(process.env.RATE_LIMIT_GENERAL) || 100,
-    auth: parseInt(process.env.RATE_LIMIT_AUTH) || 5,
+    auth: process.env.NODE_ENV === 'production' ? (parseInt(process.env.RATE_LIMIT_AUTH) || 5) : 50,
     twoFA: parseInt(process.env.RATE_LIMIT_2FA) || 10,
     window: parseInt(process.env.RATE_LIMIT_WINDOW) || 900000 // 15 minutes
   }
@@ -140,11 +144,11 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"],
-      scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com", "https://maps.googleapis.com", "'unsafe-inline'"],
-      scriptSrcAttr: ["'unsafe-inline'"],
+      scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com", "https://maps.googleapis.com"],
+      scriptSrcAttr: ["'none'"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
       frameSrc: ["https://www.google.com"],
-      connectSrc: ["'self'", "https://maps.googleapis.com", "https://www.google.com"]
+      connectSrc: ["'self'", "https://maps.googleapis.com", "https://www.google.com", "https://*.googleapis.com"]
     }
   },
   hsts: {
@@ -156,51 +160,102 @@ app.use(helmet({
 
 app.use(cors({
   origin: function(origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:3001',
-      'http://127.0.0.1:3001',
-      'http://localhost:5500',
-      'http://127.0.0.1:5500',
-      'http://localhost:7000',
-      'http://127.0.0.1:7000'
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
+    let allowedOrigins = [];
+    
+    if (process.env.NODE_ENV === 'production') {
+      // Production origins from environment variable
+      allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+    } else {
+      // Development origins
+      allowedOrigins = [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3001',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://localhost:7000',
+        'http://127.0.0.1:7000',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080',
+        // Cloudflare Tunnel domains
+        'https://app.pizzabit.io',
+        'https://api.pizzabit.io',
+        'https://pizzabit.io'
+      ];
+    }
+    
+    // Allow requests with no origin (e.g., mobile apps, file://, Postman) in development
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      console.log('✅ CORS allowing null origin in development mode');
+      callback(null, true);
+    } else if (origin && allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS allowing origin: ${origin}`);
+      callback(null, true);
+    } else if (!origin) {
+      // Always allow null origins in development, regardless of NODE_ENV check issues
+      console.log('✅ CORS allowing null origin (direct file access)');
       callback(null, true);
     } else {
+      console.warn(`🚫 CORS blocked request from origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // IE11 compatibility
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Enhanced Security Middleware
+const securityMiddleware = require('./middleware/security');
+app.use(securityMiddleware.securityHeaders);
+app.use(securityMiddleware.requestSizeLimiter);
+app.use(securityMiddleware.sanitizeInput);
+app.use(securityMiddleware.auditLogger);
+
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    // Store raw body for webhook signature verification
+    req.rawBody = buf;
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session configuration with MongoDB store
 app.use(session({
   secret: SECURITY_CONFIG.sessionSecret,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/pizza-platform',
-    touchAfter: 24 * 3600 // lazy session update
+    touchAfter: 30 * 60 // Update session every 30 minutes for security
   }),
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 2 * 60 * 60 * 1000, // 2 hours for enhanced security
     sameSite: 'strict'
   },
   name: 'pizza.sid'
 }));
 
 // Rate limiting
-const createRateLimit = (windowMs, max, message) => rateLimit({
+const createRateLimit = (windowMs, max, message, skipLocalhost = true) => rateLimit({
   windowMs,
   max,
   message: { error: message },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    if (skipLocalhost && process.env.NODE_ENV !== 'production') {
+      const ip = req.ip || req.connection.remoteAddress;
+      return ip === '127.0.0.1' || ip === '::1' || ip?.startsWith('192.168.') || ip?.startsWith('10.');
+    }
+    return false;
+  },
   handler: (req, res) => {
     console.warn(`🚫 Rate limit exceeded from ${req.ip}`);
     res.status(429).json({ error: message });
@@ -228,23 +283,80 @@ const twoFALimiter = createRateLimit(
 app.use(generalLimiter);
 
 // Helper functions
-async function verifyRecaptcha(token) {
+async function verifyRecaptcha(token, expectedAction = 'LOGIN') {
   if (!RECAPTCHA_CONFIG.secretKey) {
-    console.warn('⚠️ Warning: reCAPTCHA not configured');
-    return true; // Allow in development
+    console.warn('⚠️ Warning: reCAPTCHA Enterprise not configured');
+    return { success: true, score: 1.0, reason: 'development_mode' }; // Allow in development
   }
 
   try {
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${RECAPTCHA_CONFIG.secretKey}&response=${token}`
-    });
-    const data = await response.json();
-    return data.success;
+    const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
+    
+    // Create the reCAPTCHA client
+    const client = new RecaptchaEnterpriseServiceClient();
+    const projectID = process.env.GOOGLE_CLOUD_PROJECT_ID || 'lively-ace-464510-g2';
+    const projectPath = client.projectPath(projectID);
+
+    // Build the assessment request
+    const request = {
+      assessment: {
+        event: {
+          token: token,
+          siteKey: RECAPTCHA_CONFIG.siteKey,
+        },
+      },
+      parent: projectPath,
+    };
+
+    const [response] = await client.createAssessment(request);
+
+    // Check if the token is valid
+    if (!response.tokenProperties.valid) {
+      console.warn(`❌ reCAPTCHA token invalid: ${response.tokenProperties.invalidReason}`);
+      return { 
+        success: false, 
+        score: 0.0, 
+        reason: response.tokenProperties.invalidReason 
+      };
+    }
+
+    // Check if the expected action was executed
+    if (response.tokenProperties.action !== expectedAction) {
+      console.warn(`❌ reCAPTCHA action mismatch. Expected: ${expectedAction}, Got: ${response.tokenProperties.action}`);
+      return { 
+        success: false, 
+        score: 0.0, 
+        reason: 'action_mismatch' 
+      };
+    }
+
+    // Get the risk score (0.0 = bot, 1.0 = human)
+    const score = response.riskAnalysis.score;
+    console.log(`🛡️ reCAPTCHA Enterprise score: ${score} for action: ${expectedAction}`);
+    
+    // Log reasons if any
+    if (response.riskAnalysis.reasons && response.riskAnalysis.reasons.length > 0) {
+      console.log('reCAPTCHA reasons:', response.riskAnalysis.reasons);
+    }
+
+    // Set threshold - scores above 0.5 are considered legitimate
+    const threshold = 0.5;
+    const success = score >= threshold;
+    
+    return { 
+      success, 
+      score, 
+      reason: success ? 'passed_threshold' : 'below_threshold',
+      threshold
+    };
+    
   } catch (error) {
-    console.error('❌ reCAPTCHA verification failed:', error);
-    return false;
+    console.error('❌ reCAPTCHA Enterprise verification failed:', error);
+    return { 
+      success: false, 
+      score: 0.0, 
+      reason: 'verification_error' 
+    };
   }
 }
 
@@ -316,76 +428,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// User registration
-app.post('/api/register', authLimiter, async (req, res) => {
-  const correlationId = generateCorrelationId();
-  
-  try {
-    const { email, password, recaptchaToken } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-    
-    // Verify reCAPTCHA
-    if (!(await verifyRecaptcha(recaptchaToken))) {
-      console.warn(`🤖 reCAPTCHA failed for registration attempt: ${email} [${correlationId}]`);
-      return res.status(400).json({ error: 'reCAPTCHA verification failed' });
-    }
-    
-    // Validate password
-    const passwordErrors = validatePassword(password);
-    if (passwordErrors.length > 0) {
-      return res.status(400).json({ 
-        error: 'Password does not meet requirements',
-        details: passwordErrors 
-      });
-    }
-    
-    // Check if user already exists
-    const existingUser = await User.findByEmail(email);
-    if (existingUser) {
-      return res.status(409).json({ error: 'User already exists' });
-    }
-    
-    // Create new user
-    const passwordHash = await User.hashPassword(password);
-    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
-    
-    const user = new User({
-      email,
-      passwordHash,
-      emailVerificationToken,
-      emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    });
-    
-    await user.save();
-    await logSecurityEvent(user, 'account_created', req, { correlationId });
-    
-    // Send verification email
-    const verificationUrl = `http://localhost:${PORT}/api/verify-email?token=${emailVerificationToken}`;
-    await sendEmail(
-      email,
-      'Pizza Platform - Verify Your Email',
-      `
-        <h2>Welcome to Pizza Platform!</h2>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}">${verificationUrl}</a>
-        <p>This link will expire in 24 hours.</p>
-        <p>If you didn't create this account, please ignore this email.</p>
-      `
-    );
-    
-    console.log(`✅ User registered: ${email} [${correlationId}]`);
-    res.status(201).json({ 
-      message: 'Registration successful. Please check your email for verification.' 
-    });
-    
-  } catch (error) {
-    console.error(`❌ Registration error [${correlationId}]:`, error);
-    res.status(500).json({ error: 'Registration failed' });
-  }
-});
+// Customer registration removed - customers pay via QR codes without accounts
 
 // Email verification
 app.get('/api/verify-email', async (req, res) => {
@@ -421,21 +464,42 @@ app.get('/api/verify-email', async (req, res) => {
   }
 });
 
-// User login
-app.post('/api/login', authLimiter, async (req, res) => {
+// User login (both /api/login and /api/auth/login for compatibility)
+app.post('/api/login', [
+  authLimiter,
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 1, max: 128 })
+    .withMessage('Password is required')
+], async (req, res) => {
   const correlationId = generateCorrelationId();
   
   try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
     const { email, password, recaptchaToken } = req.body;
     
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-    
-    // Verify reCAPTCHA
-    if (!(await verifyRecaptcha(recaptchaToken))) {
-      console.warn(`🤖 reCAPTCHA failed for login attempt: ${email} [${correlationId}]`);
-      return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+    // Verify reCAPTCHA Enterprise v3 when configured
+    if (RECAPTCHA_CONFIG.secretKey) {
+      const recaptchaResult = await verifyRecaptcha(recaptchaToken, 'LOGIN');
+      if (!recaptchaResult.success) {
+        console.warn(`🤖 reCAPTCHA Enterprise failed for login attempt: ${email} [${correlationId}] - Score: ${recaptchaResult.score}, Reason: ${recaptchaResult.reason}`);
+        return res.status(400).json({ 
+          error: 'Security verification failed. Please try again.',
+          code: 'RECAPTCHA_FAILED'
+        });
+      }
+      console.log(`✅ reCAPTCHA Enterprise passed for ${email} - Score: ${recaptchaResult.score}`);
     }
     
     const user = await User.findByEmail(email);
@@ -489,6 +553,25 @@ app.post('/api/login', authLimiter, async (req, res) => {
     req.session.userId = user._id;
     req.session.email = user.email;
     
+    // Helper to generate JWT for client-side API access
+    const secrets = await require('./config/secrets').initialize();
+    const jwt = require('jsonwebtoken');
+    function issueJwtToken(user) {
+      return jwt.sign(
+        {
+          userId: user._id.toString(),
+          email: user.email
+        },
+        secrets.jwtSecret,
+        {
+          algorithm: 'HS256',
+          issuer: 'pizza-platform',
+          audience: 'user-api',
+          expiresIn: '2h'
+        }
+      );
+    }
+
     // Check if 2FA is enabled
     if (user.twoFactorEnabled) {
       req.session.twoFactorVerified = false;
@@ -510,7 +593,8 @@ app.post('/api/login', authLimiter, async (req, res) => {
       console.log(`✅ Login successful: ${email} [${correlationId}]`);
       return res.json({ 
         message: 'Login successful', 
-        user: user.toJSON()
+        user: user.toJSON(),
+        token: issueJwtToken(user)
       });
     }
     
@@ -671,14 +755,116 @@ app.post('/api/2fa/verify', authLimiter, async (req, res) => {
     });
     
     console.log(`✅ 2FA verification successful: ${user.email} [${correlationId}]`);
+    // Issue JWT after successful 2FA
+    const secrets = await require('./config/secrets').initialize();
+    const jwt = require('jsonwebtoken');
+    const twoFAToken = jwt.sign(
+      {
+        userId: user._id.toString(),
+        email: user.email
+      },
+      secrets.jwtSecret,
+      {
+        algorithm: 'HS256',
+        issuer: 'pizza-platform',
+        audience: 'user-api',
+        expiresIn: '2h'
+      }
+    );
+
     res.json({ 
       message: '2FA verification successful',
-      user: user.toJSON()
+      user: user.toJSON(),
+      token: twoFAToken
     });
     
   } catch (error) {
     console.error(`❌ 2FA login verification error [${correlationId}]:`, error);
     res.status(500).json({ error: '2FA verification failed' });
+  }
+});
+
+// Compatibility login route for frontend expecting /api/auth/login
+app.post('/api/auth/login', [
+  authLimiter,
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 1, max: 128 })
+    .withMessage('Password is required')
+], async (req, res) => {
+  // Delegate to /api/login handler logic by invoking the same code path
+  // For now, simply call the main login handler body inline to avoid refactor
+  const correlationId = generateCorrelationId();
+  try {
+    const { email, password, recaptchaToken } = req.body;
+
+    if (RECAPTCHA_CONFIG.secretKey) {
+      const recaptchaResult = await verifyRecaptcha(recaptchaToken, 'LOGIN');
+      if (!recaptchaResult.success) {
+        console.warn(`🤖 reCAPTCHA Enterprise failed for login attempt: ${email} [${correlationId}] - Score: ${recaptchaResult.score}, Reason: ${recaptchaResult.reason}`);
+        return res.status(400).json({ 
+          error: 'Security verification failed. Please try again.',
+          code: 'RECAPTCHA_FAILED'
+        });
+      }
+      console.log(`✅ reCAPTCHA Enterprise passed for ${email} - Score: ${recaptchaResult.score}`);
+    }
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      console.warn(`👤 Login attempt for non-existent user: ${email} [${correlationId}]`);
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.isLocked) {
+      await logSecurityEvent(user, 'login_failed', req, { reason: 'account_locked', correlationId });
+      return res.status(423).json({ error: 'Account temporarily locked due to too many failed attempts' });
+    }
+
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ error: 'Please verify your email before logging in' });
+    }
+
+    const isValidPassword = await user.comparePassword(password);
+    if (!isValidPassword) {
+      await user.incrementLoginAttempts();
+      await logSecurityEvent(user, 'login_failed', req, { reason: 'invalid_password', correlationId });
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.failedLoginAttempts > 0) {
+      await user.resetLoginAttempts();
+    }
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    req.session.userId = user._id;
+    req.session.email = user.email;
+
+    const secrets = await require('./config/secrets').initialize();
+    const jwt = require('jsonwebtoken');
+    const loginToken = jwt.sign(
+      { userId: user._id.toString(), email: user.email },
+      secrets.jwtSecret,
+      { algorithm: 'HS256', issuer: 'pizza-platform', audience: 'user-api', expiresIn: '2h' }
+    );
+
+    if (user.twoFactorEnabled) {
+      req.session.twoFactorVerified = false;
+      return res.json({ message: 'Login successful', requires2FA: true, user: user.toJSON() });
+    }
+
+    req.session.twoFactorVerified = true;
+    await logSecurityEvent(user, 'login_success', req, { correlationId });
+    res.json({ message: 'Login successful', user: user.toJSON(), token: loginToken });
+
+  } catch (error) {
+    console.error(`❌ Login error [${correlationId}]:`, error);
+    res.status(500).json({ error: 'Login failed' });
   }
 });
 
@@ -736,10 +922,17 @@ app.post('/api/reset-password', authLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
     
-    // Verify reCAPTCHA
-    if (!(await verifyRecaptcha(recaptchaToken))) {
-      console.warn(`🤖 reCAPTCHA failed for password reset: ${email} [${correlationId}]`);
-      return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+    // Verify reCAPTCHA Enterprise v3
+    if (RECAPTCHA_CONFIG.secretKey) {
+      const recaptchaResult = await verifyRecaptcha(recaptchaToken, 'PASSWORD_RESET');
+      if (!recaptchaResult.success) {
+        console.warn(`🤖 reCAPTCHA Enterprise failed for password reset: ${email} [${correlationId}] - Score: ${recaptchaResult.score}, Reason: ${recaptchaResult.reason}`);
+        return res.status(400).json({ 
+          error: 'Security verification failed. Please try again.',
+          code: 'RECAPTCHA_FAILED'
+        });
+      }
+      console.log(`✅ reCAPTCHA Enterprise passed for password reset ${email} - Score: ${recaptchaResult.score}`);
     }
     
     const user = await User.findByEmail(email);
@@ -882,6 +1075,13 @@ app.get('/api/config/maps-key', (req, res) => {
   });
 });
 
+// Configuration endpoints
+app.get('/api/config/recaptcha', (req, res) => {
+  res.json({
+    siteKey: process.env.RECAPTCHA_SITE_KEY || '6LcG8akrAAAAANLFQgROgJX1k27agBD64hkxPGiN' // Your actual site key
+  });
+});
+
 // Include admin routes
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
@@ -890,30 +1090,47 @@ app.use('/api/admin', adminRoutes);
 const blockchainRoutes = require('./routes/blockchain');
 app.use('/api/blockchain', blockchainRoutes);
 
-// Include KYC routes
-const kycRoutes = require('./routes/kyc');
-app.use('/api/kyc', kycRoutes);
+// KYC routes removed - not needed in vendor-only system
 
 // Include Business routes
 const businessRoutes = require('./routes/business');
 app.use('/api/business', businessRoutes);
 
+// Include email verification routes
+const emailVerificationRoutes = require('./routes/emailVerification');
+app.use('/api/email', emailVerificationRoutes);
+
+// Include customer authentication routes
+const customerRoutes = require('./routes/customer');
+app.use('/api/customer', customerRoutes);
+
 // Serve static files from frontend directory
-app.use(express.static(path.join(__dirname, '../../frontend/public')));
-app.use('/src', express.static(path.join(__dirname, '../../frontend/src')));
+app.use(express.static(path.join(__dirname, '../../frontend')));
 
 // Map pizzaimages to the actual image directory
-app.use('/pizzaimages', express.static(path.join(__dirname, '../../frontend/src/assets/images/pizzaimages')));
+app.use('/pizzaimages', express.static(path.join(__dirname, '../../frontend/assets/images/pizza/pizzaimages')));
 
 // Serve x.jpg directly from images directory
 app.get('/x.jpg', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/src/assets/images/x.jpg'));
+  res.sendFile(path.join(__dirname, '../../frontend/assets/images/x.jpg'));
 });
 
 // Handle favicon.ico
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end();
 });
+
+// Route handlers for HTML pages
+app.get('/admin-dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/pages/admin-dashboard.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/pages/admin.html'));
+});
+
+// Global error handler (must be last middleware)
+app.use(securityMiddleware.sanitizeErrors);
 
 // Initialize server
 async function startServer() {

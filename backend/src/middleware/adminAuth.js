@@ -21,8 +21,12 @@ const adminAuth = async (req, res, next) => {
     // Get admin JWT secret
     const secrets = await secretManager.initialize();
     
-    // Verify and decode token
-    const decoded = jwt.verify(token, secrets.adminJwtSecret);
+    // Verify and decode token - prevent algorithm confusion attacks
+    const decoded = jwt.verify(token, secrets.adminJwtSecret, {
+      algorithms: ['HS256'], // Explicitly specify allowed algorithms
+      issuer: 'pizza-platform',
+      audience: 'admin-dashboard'
+    });
     
     // Check if token is for admin role
     if (!decoded.role || decoded.role !== 'admin') {

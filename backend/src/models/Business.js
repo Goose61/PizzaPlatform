@@ -89,7 +89,7 @@ const contactSchema = new mongoose.Schema({
   }
 });
 
-// Loyalty vault configuration schema
+// Loyalty vault configuration schema  
 const loyaltyVaultSchema = new mongoose.Schema({
   vaultId: {
     type: String,
@@ -125,6 +125,11 @@ const loyaltyVaultSchema = new mongoose.Schema({
       max: 5
     }
   }],
+  fundingSource: {
+    type: String,
+    enum: ['self-funded', 'external', 'hybrid'],
+    default: 'self-funded'
+  },
   lastDepositAt: Date,
   lastDistributionAt: Date
 });
@@ -133,18 +138,24 @@ const loyaltyVaultSchema = new mongoose.Schema({
 const walletSchema = new mongoose.Schema({
   publicKey: {
     type: String,
-    required: true,
-    unique: true
+    required: false, // Optional - businesses link their own wallets
+    sparse: true // Allow multiple null values
   },
   encryptedPrivateKey: {
     type: String,
-    required: true
+    required: false // Optional - not used for linked wallets
   },
   createdAt: {
     type: Date,
     default: Date.now
   },
-  lastUsedAt: Date
+  lastUsedAt: Date,
+  // New fields for linked wallet support
+  isLinked: {
+    type: Boolean,
+    default: false
+  },
+  linkedAt: Date
 });
 
 // Business analytics schema
@@ -196,7 +207,7 @@ const businessSchema = new mongoose.Schema({
     trim: true,
     maxlength: 200
   },
-  businessType: {
+  businessCategory: {
     type: String,
     required: true,
     enum: [
@@ -210,6 +221,13 @@ const businessSchema = new mongoose.Schema({
       'manufacturing',
       'other'
     ]
+  },
+  // Business type classification (CN only - Crypto Native)
+  businessType: {
+    type: String,
+    enum: ['CN'], // CN = Crypto Native only
+    required: true,
+    default: 'CN'
   },
   businessDescription: {
     type: String,
@@ -268,42 +286,163 @@ const businessSchema = new mongoose.Schema({
   
   // Financial information
   businessWallet: walletSchema,
-  loyaltyVault: loyaltyVaultSchema,
   
-  // Withdrawal settings
-  withdrawalSettings: {
-    bankAccount: {
-      accountNumber: String,
-      routingNumber: String,
-      accountHolderName: String,
-      bankName: String
-    },
-    minimumWithdrawal: {
+  // Platform vault contribution tracking
+  vaultContribution: {
+    totalContributed: {
       type: Number,
-      default: 100,
-      min: 10
+      default: 0,
+      min: 0
+    }, // $7,117.50/year target
+    stakingEnabled: {
+      type: Boolean,
+      default: false
+    }, // Only for CN businesses
+    stakingYield: {
+      totalEarned: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      businessShare: {
+        type: Number,
+        default: 0,
+        min: 0
+      }, // $119.07 for CN
+      platformShare: {
+        type: Number,
+        default: 0,
+        min: 0
+      }  // $119.07 to platform
     },
-    withdrawalFee: {
+    stakingConfig: {
+      eligible: {
+        type: Boolean,
+        default: false
+      },
+      apy: {
+        type: Number,
+        default: 0.04 // 4% APY
+      },
+      yieldSplitRatio: {
+        business: {
+          type: Number,
+          default: 0.5
+        },
+        platform: {
+          type: Number,
+          default: 0.5
+        }
+      },
+      minimumStakingAmount: {
+        type: Number,
+        default: 1000 // $1,000 USDC minimum
+      },
+      setupDate: Date
+    }
+  },
+  
+  // Settlement preferences (CN only - USDC retention)
+  settlement: {
+    method: {
+      type: String,
+      enum: ['usdc-retain'], // CN businesses retain USDC
+      required: true,
+      default: 'usdc-retain'
+    },
+    walletAddress: {
+      type: String,
+      required: true // Required for CN businesses (Phantom/Solflare wallet)
+    }
+  },
+  
+  // Fee structure (CN only - Crypto Native)
+  feeStructure: {
+    platformFeePercent: {
       type: Number,
-      default: 2.5, // 2.5% fee
-      min: 0,
-      max: 10
+      required: true,
+      default: 0.01 // 1% platform fee for CN businesses
     },
-    autoWithdrawThreshold: Number
+    vaultContributionPercent: {
+      type: Number,
+      required: true,
+      default: 0.013 // 1.3% vault contribution
+    },
+    totalFeePercent: {
+      type: Number,
+      required: true,
+      default: 0.023 // 2.3% total for CN businesses
+    }
   },
   
   // Analytics and metrics
   analytics: analyticsSchema,
   
+  // Custom loyalty program settings for CN businesses
+  loyaltyProgram: {
+    discountRules: [{
+      requiredTokens: {
+        type: Number,
+        min: 0
+      }, // e.g., 3 $PIZZA SPL
+      discountPercent: {
+        type: Number,
+        min: 0,
+        max: 100
+      }, // e.g., 10%
+      description: String
+    }],
+    nftRewards: [{
+      requiredTokens: {
+        type: Number,
+        min: 0
+      }, // e.g., 20 $PIZZA SPL
+      nftType: String,
+      description: String
+    }],
+    creditRules: {
+      conversionRate: {
+        type: Number,
+        min: 0
+      }, // e.g., 10 $PIZZA SPL = $1 credit
+      redemptionRate: {
+        type: Number,
+        min: 0,
+        max: 1,
+        default: 0.5
+      }  // e.g., 50%
+    },
+    isActive: {
+      type: Boolean,
+      default: false
+    }
+  },
+  
+  // Loyalty vault configuration
+  loyaltyVault: {
+    type: loyaltyVaultSchema,
+    default: () => ({
+      isActive: false,
+      vaultId: `vault_${new mongoose.Types.ObjectId()}_${Date.now()}`,
+      totalSupply: 0,
+      currentStake: 0,
+      apy: 8.5,
+      lastYieldDistribution: null,
+      participants: 0,
+      minimumStake: 100
+    })
+  },
+  
   // Settings and preferences
   settings: {
     allowedPaymentMethods: [{
       type: String,
-      enum: ['usdc', 'pizza_token', 'sol']
+      enum: ['usdc', 'pizza_spl'], // Fixed $15 USDC or $PIZZA SPL
+      default: 'usdc'
     }],
-    requireCustomerKyc: {
-      type: Boolean,
-      default: false
+    fixedTransactionAmount: {
+      type: Number,
+      default: 15 // $15 USDC fixed amount
     },
     emailNotifications: {
       type: Boolean,
@@ -338,6 +477,27 @@ const businessSchema = new mongoose.Schema({
     lastPaymentDate: Date
   },
   
+  // Business type tracking
+  lastTypeUpdate: Date,
+  typeUpdatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  
+  // Settlement history tracking
+  settlementHistory: [{
+    type: {
+      type: String,
+      enum: ['CN']
+    },
+    data: mongoose.Schema.Types.Mixed,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  lastSettlement: Date,
+  
   // Relationships
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -358,6 +518,49 @@ const businessSchema = new mongoose.Schema({
     addedAt: {
       type: Date,
       default: Date.now
+    }
+  }],
+  
+  // Registration IP tracking for security
+  registrationIP: {
+    type: String,
+    required: true
+  },
+  registrationUserAgent: {
+    type: String,
+    required: true
+  },
+  registrationTimestamp: {
+    type: Date,
+    default: Date.now
+  },
+  
+  // Login IP tracking for business account access
+  loginHistory: [{
+    ipAddress: {
+      type: String,
+      required: true
+    },
+    userAgent: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    success: {
+      type: Boolean,
+      default: true
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }, // Which team member accessed
+    location: {
+      country: String,
+      city: String,
+      region: String
     }
   }]
 }, {
@@ -385,24 +588,40 @@ const businessSchema = new mongoose.Schema({
   }
 });
 
-// Indexes for performance
-businessSchema.index({ taxId: 1 });
+// Indexes for performance (taxId already indexed via unique: true)
 businessSchema.index({ ownerId: 1 });
 businessSchema.index({ kycStatus: 1 });
 businessSchema.index({ isActive: 1 });
-businessSchema.index({ businessType: 1 });
-businessSchema.index({ 'businessWallet.publicKey': 1 });
-businessSchema.index({ 'loyaltyVault.vaultId': 1 });
+businessSchema.index({ registrationIP: 1 });
+businessSchema.index({ 'loginHistory.ipAddress': 1 });
+businessSchema.index({ 'loginHistory.timestamp': -1 });
+businessSchema.index({ businessType: 1 }); // CN classification
+businessSchema.index({ businessCategory: 1 }); // Restaurant, retail, etc.
+// businessWallet.publicKey already indexed via unique: true
+businessSchema.index({ 'settlement.method': 1 });
+businessSchema.index({ 'vaultContribution.stakingEnabled': 1 });
 
 // Virtual for formatted business name
 businessSchema.virtual('displayName').get(function() {
   return this.businessName.toUpperCase();
 });
 
-// Virtual for vault balance
+// Virtual for vault contribution balance
 businessSchema.virtual('vaultBalance').get(function() {
-  if (!this.loyaltyVault) return 0;
-  return this.loyaltyVault.totalDeposited - this.loyaltyVault.totalDistributed;
+  if (!this.vaultContribution) return 0;
+  return this.vaultContribution.totalContributed;
+});
+
+// Virtual for annual contribution progress
+businessSchema.virtual('annualContributionProgress').get(function() {
+  const target = 7117.50; // $7,117.50 annual target
+  const contributed = this.vaultContribution?.totalContributed || 0;
+  return {
+    contributed,
+    target,
+    percentage: Math.min((contributed / target) * 100, 100),
+    remaining: Math.max(target - contributed, 0)
+  };
 });
 
 // Pre-save middleware
@@ -426,13 +645,67 @@ businessSchema.methods.generateApiKey = function() {
   return this.save();
 };
 
-businessSchema.methods.activateLoyaltyVault = async function(initialDeposit = 0) {
-  this.loyaltyVault.isActive = true;
-  this.loyaltyVault.vaultId = `vault_${this._id}_${Date.now()}`;
-  if (initialDeposit > 0) {
-    this.loyaltyVault.totalDeposited = initialDeposit;
-    this.loyaltyVault.lastDepositAt = new Date();
+// Method to initialize CN business with unified fee structure
+businessSchema.methods.initializeCNBusiness = async function() {
+  this.businessType = 'CN';
+  
+  // Set unified fee structure for all CN businesses
+  this.feeStructure.platformFeePercent = 0.01; // 1% platform fee
+  this.feeStructure.vaultContributionPercent = 0.013; // 1.3% vault contribution
+  this.feeStructure.totalFeePercent = 0.023; // 2.3% total
+  this.settlement.method = 'usdc-retain';
+  this.vaultContribution.stakingEnabled = true; // All CN businesses eligible for staking
+  
+  this.lastTypeUpdate = new Date();
+  return this.save();
+};
+
+// Method to activate loyalty program for CN businesses
+businessSchema.methods.activateLoyaltyProgram = async function(programConfig = {}) {
+  if (this.businessType !== 'CN') {
+    throw new Error('Only CN businesses can activate custom loyalty programs');
   }
+  
+  this.loyaltyProgram.isActive = true;
+  
+  // Set default discount rules if not provided
+  if (!this.loyaltyProgram.discountRules.length && programConfig.discountRules) {
+    this.loyaltyProgram.discountRules = programConfig.discountRules;
+  }
+  
+  // Set default NFT rewards if not provided
+  if (!this.loyaltyProgram.nftRewards.length && programConfig.nftRewards) {
+    this.loyaltyProgram.nftRewards = programConfig.nftRewards;
+  }
+  
+  // Set credit rules
+  if (programConfig.creditRules) {
+    this.loyaltyProgram.creditRules = programConfig.creditRules;
+  }
+  
+  return this.save();
+};
+
+// Business login tracking method
+businessSchema.methods.addLoginAttempt = function(ipAddress, userAgent, userId, success = true, location = {}) {
+  if (!this.loginHistory) {
+    this.loginHistory = [];
+  }
+  
+  this.loginHistory.push({
+    ipAddress,
+    userAgent,
+    userId,
+    success,
+    location,
+    timestamp: new Date()
+  });
+  
+  // Keep only last 200 login attempts per business
+  if (this.loginHistory.length > 200) {
+    this.loginHistory = this.loginHistory.slice(-200);
+  }
+  
   return this.save();
 };
 
@@ -450,16 +723,38 @@ businessSchema.methods.updateAnalytics = async function(transactionData) {
   return this.save();
 };
 
-businessSchema.methods.canWithdraw = function(amount) {
-  const settings = this.withdrawalSettings;
-  const minWithdrawal = settings.minimumWithdrawal || 100;
+// Method to calculate transaction fees based on business type
+businessSchema.methods.calculateTransactionFees = function(transactionAmount = 15) {
+  const platformFee = transactionAmount * this.feeStructure.platformFeePercent;
+  const vaultContribution = transactionAmount * this.feeStructure.vaultContributionPercent;
+  const totalFees = platformFee + vaultContribution;
+  const merchantAmount = transactionAmount - totalFees;
   
   return {
-    allowed: amount >= minWithdrawal && this.kycStatus === 'verified',
-    reason: amount < minWithdrawal ? 'Below minimum withdrawal amount' : 
-            this.kycStatus !== 'verified' ? 'KYC verification required' : null,
-    fee: settings.withdrawalFee ? (amount * settings.withdrawalFee / 100) : 0
+    transactionAmount,
+    platformFee: Math.round(platformFee * 10000) / 10000,
+    vaultContribution: Math.round(vaultContribution * 10000) / 10000,
+    totalFees: Math.round(totalFees * 10000) / 10000,
+    merchantAmount: Math.round(merchantAmount * 10000) / 10000,
+    businessType: this.businessType
   };
+};
+
+// Method to check settlement eligibility
+businessSchema.methods.canSettle = function() {
+  return {
+    allowed: this.kycStatus === 'verified' && this.isActive,
+    reason: this.kycStatus !== 'verified' ? 'KYC verification required' : 
+            !this.isActive ? 'Business account not active' : null,
+    method: this.settlement.method,
+    businessType: this.businessType
+  };
+};
+
+// Method to update vault contribution
+businessSchema.methods.addVaultContribution = function(amount) {
+  this.vaultContribution.totalContributed += amount;
+  return this.save();
 };
 
 // Static methods
@@ -475,8 +770,59 @@ businessSchema.statics.findActiveBusinesses = function() {
   return this.find({ isActive: true, kycStatus: 'verified' });
 };
 
-businessSchema.statics.getBusinessesByType = function(businessType) {
-  return this.find({ businessType, isActive: true });
+businessSchema.statics.getBusinessesByCategory = function(businessCategory) {
+  return this.find({ businessCategory, isActive: true });
+};
+
+// Get active CN businesses (all businesses are CN now)
+businessSchema.statics.getActiveBusinesses = function() {
+  return this.find({ isActive: true, kycStatus: 'verified' });
+};
+
+// Get CN businesses eligible for staking
+businessSchema.statics.getStakingEligibleBusinesses = function() {
+  return this.find({ 
+    businessType: 'CN',
+    'vaultContribution.stakingEnabled': true,
+    isActive: true,
+    kycStatus: 'verified'
+  });
+};
+
+// Get active CN businesses for platform operations
+businessSchema.statics.getActiveCNBusinesses = function() {
+  return this.find({
+    businessType: 'CN',
+    'settlement.method': 'usdc-retain',
+    isActive: true,
+    kycStatus: 'verified'
+  });
+};
+
+// Get platform vault contribution statistics
+businessSchema.statics.getVaultContributionStats = async function() {
+  const stats = await this.aggregate([
+    {
+      $match: {
+        isActive: true
+      }
+    },
+    {
+      $group: {
+        _id: '$businessType',
+        totalContributed: { $sum: '$vaultContribution.totalContributed' },
+        averageContribution: { $avg: '$vaultContribution.totalContributed' },
+        businessCount: { $sum: 1 },
+        stakingEnabled: {
+          $sum: {
+            $cond: ['$vaultContribution.stakingEnabled', 1, 0]
+          }
+        }
+      }
+    }
+  ]);
+  
+  return stats;
 };
 
 module.exports = mongoose.model('Business', businessSchema);

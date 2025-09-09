@@ -8,7 +8,27 @@
       "Bash(npm start)",
       "Bash(taskkill:*)",
       "Bash(powershell:*)",
-      "Bash(wmic process where:*)"
+      "Bash(wmic process where:*)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(node:*)",
+      "Bash(start-backend.bat)",
+      "Bash(./start-backend.bat)",
+      "Bash(timeout:*)",
+      "Bash(del \"C:\\Users\\zeuse\\Desktop\\Pizza\\frontend\\pages\\debug-token.html\")",
+      "Bash(find:*)",
+      "Bash(start-frontend.bat)",
+      "Bash(dir)",
+      "Bash(cmd /c:*)",
+      "Bash(curl:*)",
+      "Bash(del test-admin-login.json)",
+      "Bash(grep:*)",
+      "WebSearch",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

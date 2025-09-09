@@ -1,0 +1,14 @@
+tunnel: 3f691961-2fa6-4b59-99e0-179b4681fac4
+credentials-file: C:\Users\zeuse\.cloudflared\3f691961-2fa6-4b59-99e0-179b4681fac4.json
+
+ingress:
+  # API Backend - all API requests
+  - hostname: api.pizzabit.io
+    service: http://localhost:7000
+  
+  # Frontend App - main pizza platform
+  - hostname: app.pizzabit.io
+    service: http://localhost:3000
+  
+  # Catch-all rule (required)
+  - service: http_status:404

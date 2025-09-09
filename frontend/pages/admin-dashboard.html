@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Pizza Community</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/pizza-custom.css" rel="stylesheet">
+    <link href="../assets/css/admin.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+</head>
+<body class="admin-dashboard-body">
+    <header class="admin-header">
+        <div class="admin-nav">
+            <div class="admin-brand">
+                <i class="fas fa-pizza-slice"></i>
+                <span>Pizza Community Admin</span>
+            </div>
+            <div class="admin-user">
+                <span id="current-user">Admin</span>
+                <button id="admin-logout" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <nav class="admin-menu">
+                <a href="#overview" class="nav-item active" data-view="overview">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Platform Overview</span>
+                </a>
+                <a href="#businesses" class="nav-item" data-view="businesses">
+                    <i class="fas fa-building"></i>
+                    <span>NCN/CN Businesses</span>
+                </a>
+                <a href="#vault" class="nav-item" data-view="vault">
+                    <i class="fas fa-piggy-bank"></i>
+                    <span>Unified Vault</span>
+                </a>
+                <a href="#transactions" class="nav-item" data-view="transactions">
+                    <i class="fas fa-receipt"></i>
+                    <span>Transaction Monitor</span>
+                </a>
+                <a href="#locations" class="nav-item" data-view="locations">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Map Locations</span>
+                </a>
+                <a href="#map-view" class="nav-item" data-view="map">
+                    <i class="fas fa-globe"></i>
+                    <span>Map Management</span>
+                </a>
+                <a href="#system" class="nav-item" data-view="system">
+                    <i class="fas fa-cogs"></i>
+                    <span>System Health</span>
+                </a>
+            </nav>
+            
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <button class="btn btn-sm btn-secondary" onclick="refreshData()">
+                    <i class="fas fa-sync"></i> Refresh Data
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="downloadLogFile()">
+                    <i class="fas fa-download"></i> Download Logs
+                </button>
+                <a href="../index.html" class="btn btn-sm btn-outline">
+                    <i class="fas fa-eye"></i> View Website
+                </a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div id="overview-section" class="dashboard-section active">
+                <div class="admin-section">
+                    <h2><i class="fas fa-chart-line"></i> Platform Overview</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-revenue">$0</h3>
+                                <p>Platform Revenue</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-businesses">0</h3>
+                                <p>Active Businesses</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="vault-balance">$0</h3>
+                                <p>Vault Balance</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="daily-transactions">0</h3>
+                                <p>Daily Transactions</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-partners">0</h3>
+                                <p>Map Locations</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-pizza-slice"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-meals">0</h3>
+                                <p>Meals Served</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress bars and recent activity -->
+                    <div class="progress-section">
+                        <div class="progress-group">
+                            <h3>Progress Metrics</h3>
+                            <div class="progress-item" id="partner-growth">
+                                <label>Partner Growth</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                            <div class="progress-item" id="meal-distribution">
+                                <label>Meal Distribution</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                            <div class="progress-item" id="community-engagement">
+                                <label>Community Engagement</label>
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                    <span class="progress-text">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-group">
+                            <h3>Recent Activity</h3>
+                            <div class="activity-list" id="recent-activity-list">
+                                <!-- Activity items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="locations-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-map-marker-alt"></i> Locations Overview</h2>
+                    <p>View and edit location information. Click on map pins to see details.</p>
+                    
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="location-search" placeholder="Search locations...">
+                        </div>
+                        <div class="filter-controls">
+                            <select id="status-filter">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="progress">In Progress</option>
+                                <option value="planned">Planned</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Combined Map and Table View -->
+                    <div class="locations-view-container">
+                        <!-- Map showing pin locations -->
+                        <div class="locations-map-container">
+                            <h3><i class="fas fa-map"></i> Locations Map</h3>
+                            <div id="locations-display-map" class="admin-leaflet-map" style="height: 400px;"></div>
+                        </div>
+
+                        <!-- Table showing location details -->
+                        <div class="locations-table-container">
+                            <h3><i class="fas fa-list"></i> Location Details</h3>
+                            <table id="locations-table" class="locations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name & Location</th>
+                                        <th>Status</th>
+                                        <th>Partners</th>
+                                        <th>Meals Served</th>
+                                        <th>Date Added</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Location rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div id="map-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-globe"></i> Map Management</h2>
+                    <p>Interactive map for adding, moving, and managing location pins. Click on the map to add new locations or drag existing pins to reposition them.</p>
+                    
+                    <div class="map-controls">
+                        <button class="btn btn-sm btn-primary" onclick="enableAddLocationMode()">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="updateMapMarkers()">
+                            <i class="fas fa-sync"></i> Refresh Map
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="if(window.adminMap) window.adminMap.setView([20, 0], 2)">
+                            <i class="fas fa-crosshairs"></i> Center View
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="toggleEditMode()">
+                            <i class="fas fa-edit"></i> Edit Mode
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="makeMarkersEditable()">
+                            <i class="fas fa-arrows-alt"></i> Move Pins
+                        </button>
+                    </div>
+
+                    <div class="admin-map-container">
+                        <div id="admin-map" class="admin-leaflet-map"></div>
+                    </div>
+
+                    <!-- Add Location Form (shown when adding new location) -->
+                    <div id="location-form-container" class="location-form-container" style="display: none;">
+                        <h3><i class="fas fa-map-pin"></i> Add New Location</h3>
+                        <form id="add-location-form" class="location-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="location-name">Location Name *</label>
+                                    <input type="text" name="location-name" id="location-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="city">City *</label>
+                                    <input type="text" name="city" id="city" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="country">Country *</label>
+                                    <input type="text" name="country" id="country" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status">Status *</label>
+                                    <select name="status" id="status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="progress">In Progress</option>
+                                        <option value="planned">Planned</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude *</label>
+                                    <input type="number" name="latitude" id="latitude" step="any" required readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="longitude">Longitude *</label>
+                                    <input type="number" name="longitude" id="longitude" step="any" required readonly>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="meals-served">Meals Served</label>
+                                    <input type="number" name="meals-served" id="meals-served" min="0" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="partners">Partners</label>
+                                    <input type="number" name="partners" id="partners" min="0" value="0">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact">Contact Name</label>
+                                    <input type="text" name="contact" id="contact">
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone</label>
+                                    <input type="tel" name="phone" id="phone">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" name="email" id="email">
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" onclick="cancelAddLocation()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add Location
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Businesses Section -->
+            <div id="businesses-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-building"></i> CN Business Management</h2>
+                    
+                    <div class="business-types" style="display: grid; grid-template-columns: 1fr; gap: 30px; margin: 30px 0;">
+                        <div class="business-type-card cn" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-left: 4px solid #4caf50;">
+                            <div class="type-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                <i class="fas fa-coins" style="font-size: 2rem; color: #4caf50;"></i>
+                                <div>
+                                    <h3>CN Businesses</h3>
+                                    <span class="type-badge cn" style="padding: 5px 15px; border-radius: 20px; font-weight: bold; color: white; background: #4caf50;">Crypto Native</span>
+                                </div>
+                            </div>
+                            <div class="type-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="metric-item" style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                    <div class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #333;" id="cn-count">0</div>
+                                    <div class="metric-label" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Active Businesses</div>
+                                </div>
+                                <div class="metric-item" style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                    <div class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #333;">2.30%</div>
+                                    <div class="metric-label" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Total Fee Rate</div>
+                                </div>
+                                <div class="metric-item" style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                    <div class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #333;" id="cn-staking">0</div>
+                                    <div class="metric-label" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Staking Enabled</div>
+                                </div>
+                                <div class="metric-item" style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                    <div class="metric-value" style="font-size: 1.5rem; font-weight: bold; color: #333;">$3,773</div>
+                                    <div class="metric-label" style="font-size: 0.9rem; color: #666; margin-top: 5px;">Annual Savings</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vault Section -->
+            <div id="vault-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-piggy-bank"></i> Unified Platform Vault</h2>
+                    
+                    <div class="vault-overview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; padding: 30px; margin: 30px 0;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 20px; text-align: center;">
+                            <i class="fas fa-piggy-bank"></i> Unified Platform Vault System
+                        </h3>
+                        <div class="vault-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div class="vault-stat" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                <div class="vault-stat-value" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 5px;" id="total-contributions">$0</div>
+                                <div class="vault-stat-label" style="font-size: 0.9rem; opacity: 0.9;">Total Contributions</div>
+                            </div>
+                            <div class="vault-stat" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                <div class="vault-stat-value" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 5px;" id="rewards-distributed">$0</div>
+                                <div class="vault-stat-label" style="font-size: 0.9rem; opacity: 0.9;">Rewards Distributed</div>
+                            </div>
+                            <div class="vault-stat" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                <div class="vault-stat-value" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 5px;" id="gift-card-funding">$0</div>
+                                <div class="vault-stat-label" style="font-size: 0.9rem; opacity: 0.9;">Gift Card Funding</div>
+                            </div>
+                            <div class="vault-stat" style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                <div class="vault-stat-value" style="font-size: 1.8rem; font-weight: bold; margin-bottom: 5px;" id="vault-surplus-stat">$0</div>
+                                <div class="vault-stat-label" style="font-size: 0.9rem; opacity: 0.9;">Current Surplus</div>
+                            </div>
+                        </div>
+                        <div class="vault-info" style="margin-top: 20px; text-align: center;">
+                            <p><strong>1.3% of all transactions</strong> fund the unified vault ($0.195 per $15 transaction)</p>
+                            <p><strong>Annual target:</strong> $7,117.50 per business × 10 partners = $71,175 total</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div id="transactions-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-receipt"></i> Transaction Monitor</h2>
+                    
+                    <div class="transaction-monitor" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                        <div class="monitor-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3><i class="fas fa-activity"></i> Live Transaction Feed</h3>
+                            <div class="live-indicator" style="display: flex; align-items: center; gap: 10px; color: #4caf50;">
+                                <div class="live-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #4caf50; animation: pulse 2s infinite;"></div>
+                                <span>Live Updates</span>
+                            </div>
+                        </div>
+                        <div class="transaction-feed" id="transaction-feed">
+                            <div class="transaction-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 10px; background: #f8f9fa; margin-bottom: 10px;">
+                                <div class="transaction-icon payment" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; background: #4caf50;">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="transaction-details" style="flex: 1;">
+                                    <div class="transaction-title" style="font-weight: 600; margin-bottom: 5px;">$15 USDC Payment</div>
+                                    <div class="transaction-info" style="font-size: 0.9rem; color: #666;">NCN Business • Customer reward: 0.3 $PIZZA SPL</div>
+                                </div>
+                                <div class="transaction-amount" style="font-weight: bold; color: #333;">+$14.59</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Section -->
+            <div id="system-section" class="dashboard-section">
+                <div class="admin-section">
+                    <h2><i class="fas fa-cogs"></i> System Health & Maintenance</h2>
+                    
+                    <div class="system-health" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                        <div class="health-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;">
+                            <i class="fas fa-database" style="font-size: 2rem; color: #4caf50;"></i>
+                            <h4>Unified Vault</h4>
+                            <div class="health-status operational" style="font-size: 1.2rem; font-weight: bold; margin: 10px 0; color: #4caf50;">Operational</div>
+                            <small>All contributions processing normally</small>
+                        </div>
+                        
+                        <div class="health-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;">
+                            <i class="fas fa-exchange-alt" style="font-size: 2rem; color: #4caf50;"></i>
+                            <h4>Ramp Integration</h4>
+                            <div class="health-status operational" style="font-size: 1.2rem; font-weight: bold; margin: 10px 0; color: #4caf50;">Operational</div>
+                            <small>NCN settlements active</small>
+                        </div>
+                        
+                        <div class="health-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;">
+                            <i class="fas fa-rocket" style="font-size: 2rem; color: #4caf50;"></i>
+                            <h4>Jupiter DEX</h4>
+                            <div class="health-status operational" style="font-size: 1.2rem; font-weight: bold; margin: 10px 0; color: #4caf50;">Operational</div>
+                            <small>0.75% swap efficiency</small>
+                        </div>
+                        
+                        <div class="health-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;">
+                            <i class="fas fa-chart-area" style="font-size: 2rem; color: #4caf50;"></i>
+                            <h4>Kamino Staking</h4>
+                            <div class="health-status operational" style="font-size: 1.2rem; font-weight: bold; margin: 10px 0; color: #4caf50;">Operational</div>
+                            <small>4% APY active</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="../assets/js/map-data.js"></script>
+    <script src="admin.js"></script>
+    
+    <!-- Initialize Admin Dashboard Animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add animation classes to dashboard elements
+            const cards = document.querySelectorAll('.stat-card, .chart-container, .admin-card');
+            const buttons = document.querySelectorAll('.btn, .admin-btn');
+            
+            cards.forEach((card, index) => {
+                card.classList.add('animate-ready', 'modern-card');
+                card.dataset.animation = index % 3 === 0 ? 'fadeInUp' : index % 3 === 1 ? 'slideInLeft' : 'scaleIn';
+            });
+            
+            buttons.forEach(btn => {
+                btn.classList.add('interactive-btn', 'hover-scale');
+            });
+            
+            // Animate navigation items
+            const navItems = document.querySelectorAll('.admin-nav-item, .nav-link');
+            navItems.forEach((item, index) => {
+                item.style.animationDelay = `${index * 100}ms`;
+                item.classList.add('animate-ready');
+                item.dataset.animation = 'slideInLeft';
+            });
+        });
+    </script>
+</body>
+</html>

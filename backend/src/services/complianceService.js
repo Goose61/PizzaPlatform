@@ -246,7 +246,9 @@ class ComplianceService {
         alerts: [],
         riskScore: 0,
         shouldFlag: false,
-        shouldBlock: false
+        shouldBlock: false,
+        monitoredAt: new Date(),
+        ipAddress: transaction.metadata?.ipAddress || 'unknown'
       };
 
       // Check for suspicious patterns

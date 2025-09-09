@@ -1,34 +1,46 @@
 const winston = require('winston');
-const { Connection, PublicKey, Transaction: SolanaTransaction, sendAndConfirmTransaction } = require('@solana/web3.js');
-const { Token, TOKEN_PROGRAM_ID } = require('@solana/spl-token');
+const { Connection, PublicKey } = require('@solana/web3.js');
 const User = require('../models/User');
+const Business = require('../models/Business');
 const Transaction = require('../models/Transaction');
 
+/**
+ * RewardsService - Fixed Rate Reward Distribution
+ * 
+ * Handles fixed 0.3 $PIZZA SPL reward per $15 transaction
+ * Manages platform vault funding from 1.3% transaction fees
+ * Distributes rewards from unified platform vault with $2,320.06 annual surplus
+ * Cost-controlled at $0.15 per reward vs $0.195 vault contribution
+ */
 class RewardsService {
   constructor() {
     this.connection = new Connection(
       process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com'
     );
     
-    // Pizza token mint address
-    this.pizzaTokenMint = new PublicKey(process.env.PIZZA_TOKEN_MINT);
+    // Fixed reward configuration
+    this.fixedRewardAmount = 0.3;        // 0.3 $PIZZA SPL per transaction
+    this.transactionAmount = 15;         // Fixed $15 USDC transactions
+    this.rewardCost = 0.15;             // $0.15 cost per reward
+    this.vaultContributionPerTx = 0.195; // $0.195 from 1.3% of $15
     
-    // Tier multipliers for rewards
-    this.tierMultipliers = {
-      unverified: 1.0,
-      tier1: 1.5,
-      tier2: 2.0
+    // Annual targets and projections
+    this.annualTargets = {
+      vaultContribution: 7117.50,       // $7,117.50 per business per year
+      rewardDistribution: 4797.44,      // $4,797.44 in rewards per business
+      vaultSurplus: 2320.06,           // $2,320.06 surplus per business
+      transactionsPerBusiness: 36500,   // 100 transactions per day
+      pizzaTokensPerBusiness: 10950     // 36,500 * 0.3 = 10,950 tokens
     };
     
-    // Base reward rate (1% of transaction value)
-    this.baseRewardRate = 0.01;
+    // Token configuration
+    this.pizzaSPLMint = new PublicKey(process.env.PIZZA_TOKEN_MINT);
+    this.usdcMint = new PublicKey(process.env.USDC_MINT);
+    this.treasuryAddress = new PublicKey(process.env.TREASURY_WALLET_ADDRESS);
     
-    // Staking APR rates by lock period
-    this.stakingRates = {
-      30: 0.05,   // 5% APR for 30 days
-      90: 0.075,  // 7.5% APR for 90 days  
-      180: 0.10   // 10% APR for 180 days
-    };
+    // Initialize services
+    this.GiftCardService = require('./giftCardService');
+    this.giftCardService = new this.GiftCardService();
     
     // Setup logging
     this.logger = winston.createLogger({
@@ -39,525 +51,434 @@ class RewardsService {
       ),
       transports: [
         new winston.transports.File({ filename: 'logs/rewards-operations.log' }),
-        new winston.transports.Console({ 
+        new winston.transports.Console({
           format: winston.format.simple(),
           level: 'error'
         })
       ]
     });
   }
-
+  
   /**
-   * Calculate reward amount for a transaction
-   * @param {Object} transaction - Transaction object
-   * @param {Object} user - User object
-   * @param {Object} businessVault - Business loyalty vault settings (optional)
-   * @returns {Object} - Reward calculation result
+   * Process fixed reward distribution for payment transaction
    */
-  async calculateTransactionReward(transaction, user, businessVault = null) {
+  async processPaymentReward(transactionData) {
     try {
-      const { amount, type, businessId } = transaction;
-      const userTier = user.kycTier || 'unverified';
-      
-      // Base reward calculation (1% of transaction value)
-      let baseReward = amount * this.baseRewardRate;
-      
-      // Apply KYC tier multiplier
-      const tierMultiplier = this.tierMultipliers[userTier] || 1.0;
-      let finalReward = baseReward * tierMultiplier;
-      
-      // Apply business-specific multipliers if available
-      let businessMultiplier = 1.0;
-      if (businessVault && businessVault.rewardRate) {
-        businessMultiplier = businessVault.rewardRate / 100; // Convert percentage to decimal
-        finalReward = amount * businessMultiplier * tierMultiplier;
-      }
-      
-      // Special transaction type bonuses
-      const typeMultipliers = {
-        payment: 1.0,
-        subscription: 1.2,  // 20% bonus for subscriptions
-        bulk_purchase: 1.1  // 10% bonus for bulk purchases
-      };
-      
-      const typeMultiplier = typeMultipliers[type] || 1.0;
-      finalReward *= typeMultiplier;
-      
-      // Apply minimum and maximum reward limits
-      const minReward = 0.001; // Minimum 0.001 PIZZA tokens
-      const maxReward = amount * 0.05; // Maximum 5% of transaction value
-      
-      finalReward = Math.max(minReward, Math.min(finalReward, maxReward));
-      
-      const calculation = {
-        transactionId: transaction._id || transaction.id,
-        userId: user._id || user.id,
+      const { 
+        userId,
         businessId,
-        baseAmount: amount,
-        baseReward,
-        tierMultiplier,
-        businessMultiplier,
-        typeMultiplier,
-        finalReward,
-        calculatedAt: new Date(),
-        details: {
-          userTier,
-          transactionType: type,
-          businessVaultRate: businessVault?.rewardRate || null
-        }
-      };
+        transactionId,
+        customerWalletAddress,
+        transactionAmount = 15
+      } = transactionData;
       
-      this.logger.info('Reward calculated', calculation);
-      
-      return calculation;
-      
-    } catch (error) {
-      this.logger.error('Reward calculation failed', {
-        error: error.message,
-        transactionId: transaction._id,
-        userId: user._id
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Distribute reward tokens to user
-   * @param {string} userId - User ID
-   * @param {number} amount - Reward amount in PIZZA tokens
-   * @param {string} transactionId - Original transaction ID
-   * @param {Object} metadata - Additional reward metadata
-   * @returns {Object} - Distribution result
-   */
-  async distributeReward(userId, amount, transactionId, metadata = {}) {
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error('User not found');
+      // Validate transaction amount (must be $15)
+      if (transactionAmount !== this.transactionAmount) {
+        throw new Error(`Invalid transaction amount. Must be $${this.transactionAmount}`);
       }
       
-      // Get or create user's token account
-      const userWallet = await this.getUserWallet(user);
-      if (!userWallet) {
-        throw new Error('User wallet not found');
+      // Get business for vault contribution calculation
+      const business = await Business.findById(businessId);
+      if (!business) {
+        throw new Error('Business not found');
       }
       
-      // Mint PIZZA tokens to user's wallet
-      const mintResult = await this.mintPizzaTokens(
-        userWallet.publicKey,
-        amount,
-        `Reward for transaction ${transactionId}`
-      );
+      // Calculate fees and contributions
+      const feeCalculation = business.calculateTransactionFees(transactionAmount);
+      const vaultContribution = feeCalculation.vaultContribution;
       
-      // Create reward transaction record
-      const rewardTransaction = new Transaction({
+      // Distribute fixed reward to customer
+      const rewardResult = await this.distributeFixedReward({
         userId,
-        type: 'reward',
-        amount,
-        currency: 'PIZZA',
-        status: mintResult.success ? 'completed' : 'failed',
-        metadata: {
-          ...metadata,
-          originalTransactionId: transactionId,
-          mintSignature: mintResult.signature,
-          rewardType: 'transaction_reward'
-        },
-        createdAt: new Date()
-      });
-      
-      await rewardTransaction.save();
-      
-      // Update user's total rewards earned
-      user.totalRewardsEarned = (user.totalRewardsEarned || 0) + amount;
-      await user.save();
-      
-      const result = {
-        userId,
-        amount,
-        transactionId: rewardTransaction._id,
-        mintSignature: mintResult.signature,
-        success: mintResult.success,
-        distributedAt: new Date()
-      };
-      
-      this.logger.info('Reward distributed', result);
-      
-      return result;
-      
-    } catch (error) {
-      this.logger.error('Reward distribution failed', {
-        error: error.message,
-        userId,
-        amount,
+        customerWalletAddress,
+        amount: this.fixedRewardAmount,
         transactionId
       });
-      throw error;
-    }
-  }
-
-  /**
-   * Process staking rewards for all active stakers
-   * @returns {Object} - Processing results
-   */
-  async processStakingRewards() {
-    try {
-      const now = new Date();
-      const results = {
-        processed: 0,
-        failed: 0,
-        totalRewards: 0,
-        errors: []
-      };
       
-      // Find all active staking positions
-      const activeStakes = await Transaction.find({
-        type: 'stake',
-        status: 'active',
-        'metadata.lockPeriod': { $exists: true },
-        'metadata.stakedAt': { $exists: true }
+      // Fund platform vault
+      await this.fundPlatformVault({
+        businessId,
+        amount: vaultContribution,
+        transactionId
       });
       
-      for (const stake of activeStakes) {
-        try {
-          const stakeReward = await this.calculateStakingReward(stake, now);
-          
-          if (stakeReward.amount > 0) {
-            await this.distributeReward(
-              stake.userId,
-              stakeReward.amount,
-              stake._id,
-              {
-                rewardType: 'staking_reward',
-                stakingPeriod: stake.metadata.lockPeriod,
-                apr: stakeReward.apr
-              }
-            );
-            
-            // Update last reward distribution time
-            stake.metadata.lastRewardAt = now;
-            await stake.save();
-            
-            results.processed++;
-            results.totalRewards += stakeReward.amount;
-          }
-          
-        } catch (error) {
-          results.failed++;
-          results.errors.push({
-            stakeId: stake._id,
-            error: error.message
-          });
-          
-          this.logger.error('Staking reward processing failed', {
-            stakeId: stake._id,
-            error: error.message
+      // Update transaction record with reward info
+      await Transaction.findById(transactionId).then(tx => {
+        if (tx) {
+          tx.recordRewardDistribution({
+            tokens: this.fixedRewardAmount,
+            vaultContribution,
+            transactionId: rewardResult.distributionTxId
           });
         }
-      }
-      
-      this.logger.info('Staking rewards batch processed', results);
-      
-      return results;
-      
-    } catch (error) {
-      this.logger.error('Staking rewards batch processing failed', {
-        error: error.message
       });
-      throw error;
-    }
-  }
-
-  /**
-   * Calculate staking reward for a specific stake
-   * @param {Object} stake - Stake transaction
-   * @param {Date} currentTime - Current timestamp
-   * @returns {Object} - Staking reward calculation
-   */
-  async calculateStakingReward(stake, currentTime) {
-    try {
-      const stakedAmount = stake.amount;
-      const lockPeriod = stake.metadata.lockPeriod; // in days
-      const stakedAt = stake.metadata.stakedAt;
-      const lastRewardAt = stake.metadata.lastRewardAt || stakedAt;
       
-      // Calculate time elapsed since last reward
-      const timeElapsed = currentTime - new Date(lastRewardAt);
-      const daysElapsed = timeElapsed / (1000 * 60 * 60 * 24);
+      // Update user payment statistics
+      await this.updateUserPaymentStats(userId, businessId, transactionAmount);
       
-      // Only process if at least 1 day has passed
-      if (daysElapsed < 1) {
-        return { amount: 0, apr: 0, daysElapsed };
-      }
-      
-      // Get APR for the lock period
-      const apr = this.stakingRates[lockPeriod] || this.stakingRates[30];
-      
-      // Calculate daily reward rate
-      const dailyRate = apr / 365;
-      
-      // Calculate reward amount
-      const rewardAmount = stakedAmount * dailyRate * Math.floor(daysElapsed);
+      this.logger.info('Payment reward processed', {
+        userId,
+        businessId,
+        transactionId,
+        rewardAmount: this.fixedRewardAmount,
+        vaultContribution,
+        rewardCost: this.rewardCost,
+        surplus: vaultContribution - this.rewardCost
+      });
       
       return {
-        amount: rewardAmount,
-        apr,
-        daysElapsed: Math.floor(daysElapsed),
-        dailyRate,
-        stakedAmount
+        rewardDistributed: this.fixedRewardAmount,
+        vaultContribution,
+        rewardCost: this.rewardCost,
+        surplus: vaultContribution - this.rewardCost,
+        distributionTxId: rewardResult.distributionTxId
       };
       
     } catch (error) {
-      this.logger.error('Staking reward calculation failed', {
-        stakeId: stake._id,
-        error: error.message
-      });
+      this.logger.error('Payment reward processing failed', error);
       throw error;
     }
   }
-
+  
   /**
-   * Create staking position
-   * @param {string} userId - User ID
-   * @param {number} amount - Amount to stake
-   * @param {number} lockPeriod - Lock period in days (30, 90, or 180)
-   * @returns {Object} - Staking result
+   * Distribute fixed 0.3 $PIZZA SPL reward to customer
    */
-  async createStakingPosition(userId, amount, lockPeriod) {
+  async distributeFixedReward(rewardData) {
     try {
-      if (!this.stakingRates[lockPeriod]) {
-        throw new Error('Invalid lock period. Must be 30, 90, or 180 days');
-      }
+      const { userId, customerWalletAddress, amount, transactionId } = rewardData;
       
+      // Create reward distribution transaction on Solana
+      const distributionTx = await this.createRewardDistributionTx({
+        recipientAddress: customerWalletAddress,
+        amount,
+        fromVault: 'platform'
+      });
+      
+      // Update user wallet balance
       const user = await User.findById(userId);
-      if (!user) {
-        throw new Error('User not found');
+      if (user) {
+        await user.updateBalance('pizza_spl', amount);
+        await user.processPayment(rewardData.businessId, this.transactionAmount);
       }
       
-      // Verify user has sufficient PIZZA tokens
-      const userBalance = await this.getUserPizzaBalance(user);
-      if (userBalance < amount) {
-        throw new Error('Insufficient PIZZA token balance');
-      }
-      
-      // Lock tokens (transfer to staking contract)
-      const lockResult = await this.lockTokensForStaking(user, amount);
-      
-      if (!lockResult.success) {
-        throw new Error('Failed to lock tokens for staking');
-      }
-      
-      // Create staking transaction record
-      const stakingTransaction = new Transaction({
+      this.logger.info('Fixed reward distributed', {
         userId,
-        type: 'stake',
+        customerWallet: customerWalletAddress,
         amount,
-        currency: 'PIZZA',
-        status: 'active',
-        metadata: {
-          lockPeriod,
-          apr: this.stakingRates[lockPeriod],
-          stakedAt: new Date(),
-          unlockAt: new Date(Date.now() + lockPeriod * 24 * 60 * 60 * 1000),
-          lockSignature: lockResult.signature,
-          lastRewardAt: new Date()
-        }
+        distributionTxId: distributionTx.signature,
+        referenceTransactionId: transactionId
       });
       
-      await stakingTransaction.save();
-      
-      // Update user's total staked amount
-      user.totalStaked = (user.totalStaked || 0) + amount;
-      await user.save();
-      
-      const result = {
-        stakeId: stakingTransaction._id,
+      return {
+        distributionTxId: distributionTx.signature,
         amount,
-        lockPeriod,
-        apr: this.stakingRates[lockPeriod],
-        unlockAt: stakingTransaction.metadata.unlockAt,
-        success: true
+        recipient: customerWalletAddress,
+        cost: this.rewardCost
       };
       
-      this.logger.info('Staking position created', result);
-      
-      return result;
-      
     } catch (error) {
-      this.logger.error('Staking position creation failed', {
-        error: error.message,
-        userId,
-        amount,
-        lockPeriod
-      });
+      this.logger.error('Fixed reward distribution failed', error);
       throw error;
     }
   }
-
+  
   /**
-   * Unstake tokens (after lock period expires)
-   * @param {string} userId - User ID
-   * @param {string} stakeId - Stake transaction ID
-   * @returns {Object} - Unstaking result
+   * Fund platform vault with 1.3% contribution from transactions
    */
-  async unstakeTokens(userId, stakeId) {
+  async fundPlatformVault(vaultData) {
     try {
-      const stake = await Transaction.findOne({
-        _id: stakeId,
-        userId,
-        type: 'stake',
-        status: 'active'
+      const { businessId, amount, transactionId } = vaultData;
+      
+      // Update business vault contribution tracking
+      const business = await Business.findById(businessId);
+      if (business) {
+        await business.addVaultContribution(amount);
+      }
+      
+      // Record vault funding transaction
+      const vaultTx = await this.createVaultFundingTx({
+        fromBusiness: businessId,
+        amount,
+        vaultType: 'platform'
       });
       
-      if (!stake) {
-        throw new Error('Active stake not found');
-      }
+      this.logger.info('Platform vault funded', {
+        businessId,
+        amount,
+        vaultTxId: vaultTx.signature,
+        referenceTransactionId: transactionId,
+        businessTotalContribution: business?.vaultContribution?.totalContributed || 0
+      });
       
-      const now = new Date();
-      const unlockTime = new Date(stake.metadata.unlockAt);
-      
-      if (now < unlockTime) {
-        throw new Error('Stake is still locked. Cannot unstake before unlock time');
-      }
-      
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error('User not found');
-      }
-      
-      // Calculate final staking reward
-      const finalReward = await this.calculateStakingReward(stake, now);
-      
-      // Distribute final reward if any
-      if (finalReward.amount > 0) {
-        await this.distributeReward(
-          userId,
-          finalReward.amount,
-          stakeId,
-          { rewardType: 'final_staking_reward' }
-        );
-      }
-      
-      // Unlock tokens (return to user's wallet)
-      const unlockResult = await this.unlockStakedTokens(user, stake.amount);
-      
-      if (!unlockResult.success) {
-        throw new Error('Failed to unlock staked tokens');
-      }
-      
-      // Update stake status
-      stake.status = 'completed';
-      stake.metadata.unstakedAt = now;
-      stake.metadata.finalReward = finalReward.amount;
-      stake.metadata.unlockSignature = unlockResult.signature;
-      await stake.save();
-      
-      // Update user's total staked amount
-      user.totalStaked = Math.max(0, (user.totalStaked || 0) - stake.amount);
-      await user.save();
-      
-      const result = {
-        stakeId,
-        originalAmount: stake.amount,
-        finalReward: finalReward.amount,
-        totalReturned: stake.amount + finalReward.amount,
-        unlockSignature: unlockResult.signature,
-        success: true
+      return {
+        vaultTxId: vaultTx.signature,
+        amount,
+        businessId
       };
       
-      this.logger.info('Tokens unstaked', result);
-      
-      return result;
-      
     } catch (error) {
-      this.logger.error('Unstaking failed', {
-        error: error.message,
-        userId,
-        stakeId
-      });
+      this.logger.error('Platform vault funding failed', error);
       throw error;
     }
   }
-
+  
   /**
-   * Get user's staking positions
-   * @param {string} userId - User ID
-   * @returns {Array} - User's staking positions
+   * Issue gift card as additional reward (100 per month per business)
    */
-  async getUserStakingPositions(userId) {
+  async issueGiftCardReward(giftCardData) {
     try {
-      const stakes = await Transaction.find({
-        userId,
-        type: 'stake',
-        status: { $in: ['active', 'completed'] }
-      }).sort({ createdAt: -1 });
+      const { businessId, recipientWalletAddress, campaignId } = giftCardData;
       
-      const positions = [];
+      // Check if business has reached monthly quota
+      const business = await Business.findById(businessId);
+      const monthlyCount = await this.giftCardService.getCurrentMonthMintCount(businessId);
       
-      for (const stake of stakes) {
-        const position = {
-          stakeId: stake._id,
-          amount: stake.amount,
-          status: stake.status,
-          lockPeriod: stake.metadata.lockPeriod,
-          apr: stake.metadata.apr,
-          stakedAt: stake.metadata.stakedAt,
-          unlockAt: stake.metadata.unlockAt,
-          lastRewardAt: stake.metadata.lastRewardAt
+      if (monthlyCount >= 100) {
+        return {
+          issued: false,
+          reason: 'Monthly gift card quota reached (100 cards/month)'
         };
-        
-        // Calculate pending rewards for active stakes
-        if (stake.status === 'active') {
-          const pendingReward = await this.calculateStakingReward(stake, new Date());
-          position.pendingReward = pendingReward.amount;
-          position.daysRemaining = Math.max(0, 
-            Math.ceil((new Date(stake.metadata.unlockAt) - new Date()) / (1000 * 60 * 60 * 24))
-          );
-        }
-        
-        if (stake.status === 'completed') {
-          position.unstakedAt = stake.metadata.unstakedAt;
-          position.finalReward = stake.metadata.finalReward || 0;
-        }
-        
-        positions.push(position);
       }
       
-      return positions;
+      // Issue gift card NFT
+      const giftCardResult = await this.giftCardService.mintGiftCard({
+        businessId,
+        recipientWalletAddress,
+        customMessage: 'Reward gift card from your recent purchase!',
+        campaignId
+      });
+      
+      this.logger.info('Gift card reward issued', {
+        businessId,
+        recipientWallet: recipientWalletAddress,
+        giftCardId: giftCardResult.giftCardId,
+        value: 5, // 5 $PIZZA SPL value
+        monthlyCount: monthlyCount + 1
+      });
+      
+      return {
+        issued: true,
+        giftCardId: giftCardResult.giftCardId,
+        value: 5,
+        expiryDate: giftCardResult.expiryDate,
+        nftAddress: giftCardResult.nftAddress
+      };
       
     } catch (error) {
-      this.logger.error('Failed to get staking positions', {
-        error: error.message,
-        userId
-      });
-      throw error;
+      this.logger.error('Gift card reward issuance failed', error);
+      return {
+        issued: false,
+        reason: 'Gift card issuance failed',
+        error: error.message
+      };
     }
   }
-
-  // Helper methods for blockchain interactions
-  async getUserWallet(user) {
-    // Implementation depends on wallet service
-    // This would typically fetch user's Solana wallet from WalletService
-    return { publicKey: 'placeholder' }; // Placeholder
+  
+  /**
+   * Calculate merchant loyalty perks based on $PIZZA SPL holdings
+   */
+  async calculateLoyaltyPerks(userData) {
+    try {
+      const { userId, businessId, pizzaSPLBalance } = userData;
+      
+      const business = await Business.findById(businessId);
+      if (!business || !business.loyaltyProgram.isActive) {
+        return {
+          hasPerks: false,
+          reason: 'Business loyalty program not active'
+        };
+      }
+      
+      const availablePerks = [];
+      
+      // Check discount rules
+      for (const discountRule of business.loyaltyProgram.discountRules) {
+        if (pizzaSPLBalance >= discountRule.requiredTokens) {
+          availablePerks.push({
+            type: 'discount',
+            value: `${discountRule.discountPercent}%`,
+            description: discountRule.description,
+            requiredTokens: discountRule.requiredTokens
+          });
+        }
+      }
+      
+      // Check NFT rewards
+      for (const nftReward of business.loyaltyProgram.nftRewards) {
+        if (pizzaSPLBalance >= nftReward.requiredTokens) {
+          availablePerks.push({
+            type: 'nft',
+            value: nftReward.nftType,
+            description: nftReward.description,
+            requiredTokens: nftReward.requiredTokens
+          });
+        }
+      }
+      
+      // Check credit conversion
+      const creditRules = business.loyaltyProgram.creditRules;
+      if (creditRules && creditRules.conversionRate > 0) {
+        const availableCredit = Math.floor(pizzaSPLBalance / creditRules.conversionRate);
+        if (availableCredit > 0) {
+          availablePerks.push({
+            type: 'store_credit',
+            value: `$${availableCredit}`,
+            description: `Convert ${creditRules.conversionRate} $PIZZA SPL to $1 store credit`,
+            conversionRate: creditRules.conversionRate,
+            redemptionRate: creditRules.redemptionRate
+          });
+        }
+      }
+      
+      this.logger.info('Loyalty perks calculated', {
+        userId,
+        businessId,
+        pizzaSPLBalance,
+        availablePerks: availablePerks.length
+      });
+      
+      return {
+        hasPerks: availablePerks.length > 0,
+        perks: availablePerks,
+        totalBalance: pizzaSPLBalance
+      };
+      
+    } catch (error) {
+      this.logger.error('Loyalty perk calculation failed', error);
+      return {
+        hasPerks: false,
+        error: error.message
+      };
+    }
   }
-
-  async getUserPizzaBalance(user) {
-    // Get user's PIZZA token balance from Solana
-    return 1000; // Placeholder
+  
+  /**
+   * Get reward distribution analytics
+   */
+  async getRewardAnalytics(businessId = null) {
+    try {
+      // Build aggregation pipeline
+      const matchStage = {
+        type: 'payment',
+        status: 'confirmed',
+        'rewards.pizzaTokensDistributed': { $gt: 0 }
+      };
+      
+      if (businessId) {
+        matchStage.businessId = new require('mongoose').Types.ObjectId(businessId);
+      }
+      
+      const analytics = await Transaction.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: businessId ? null : '$businessId',
+            totalTransactions: { $sum: 1 },
+            totalRewardsDistributed: { $sum: '$rewards.pizzaTokensDistributed' },
+            totalVaultContributions: { $sum: '$rewards.vaultFunded' },
+            averageRewardPerTx: { $avg: '$rewards.pizzaTokensDistributed' },
+            totalRewardCost: { $sum: { $multiply: ['$rewards.pizzaTokensDistributed', this.rewardCost / this.fixedRewardAmount] } },
+            giftCardsIssued: { $sum: { $cond: ['$rewards.giftCardIssued', 1, 0] } }
+          }
+        },
+        {
+          $project: {
+            businessId: '$_id',
+            totalTransactions: 1,
+            totalRewardsDistributed: 1,
+            totalVaultContributions: 1,
+            averageRewardPerTx: 1,
+            totalRewardCost: 1,
+            giftCardsIssued: 1,
+            vaultSurplus: { $subtract: ['$totalVaultContributions', '$totalRewardCost'] },
+            averageVaultContribution: { $divide: ['$totalVaultContributions', '$totalTransactions'] }
+          }
+        }
+      ]);
+      
+      const result = analytics[0] || {
+        totalTransactions: 0,
+        totalRewardsDistributed: 0,
+        totalVaultContributions: 0,
+        averageRewardPerTx: 0,
+        totalRewardCost: 0,
+        giftCardsIssued: 0,
+        vaultSurplus: 0
+      };
+      
+      // Add configuration and targets
+      result.configuration = {
+        fixedRewardAmount: this.fixedRewardAmount,
+        rewardCost: this.rewardCost,
+        vaultContributionPerTx: this.vaultContributionPerTx,
+        targetSurplusPerTx: this.vaultContributionPerTx - this.rewardCost
+      };
+      
+      result.targets = this.annualTargets;
+      
+      return result;
+      
+    } catch (error) {
+      this.logger.error('Reward analytics retrieval failed', error);
+      return {
+        error: error.message,
+        configuration: {
+          fixedRewardAmount: this.fixedRewardAmount,
+          rewardCost: this.rewardCost,
+          vaultContributionPerTx: this.vaultContributionPerTx
+        }
+      };
+    }
   }
-
-  async mintPizzaTokens(walletAddress, amount, memo) {
-    // Mint PIZZA tokens to user's wallet
-    return { success: true, signature: 'placeholder' }; // Placeholder
+  
+  /**
+   * Update user payment statistics
+   */
+  async updateUserPaymentStats(userId, businessId, transactionAmount) {
+    try {
+      const user = await User.findById(userId);
+      if (!user) return;
+      
+      // Update payment totals
+      if (!user.payments) {
+        user.payments = {
+          totalTransactions: 0,
+          totalVolume: 0,
+          pizzaSPLRewardsEarned: 0,
+          favoriteBusinesses: []
+        };
+      }
+      
+      user.payments.totalTransactions += 1;
+      user.payments.totalVolume += transactionAmount;
+      user.payments.pizzaSPLRewardsEarned += this.fixedRewardAmount;
+      user.payments.lastTransactionDate = new Date();
+      
+      // Update favorite business
+      await user.updateFavoriteBusiness(businessId, transactionAmount);
+      
+      await user.save();
+      
+    } catch (error) {
+      this.logger.error('User payment stats update failed', error);
+    }
   }
-
-  async lockTokensForStaking(user, amount) {
-    // Transfer tokens to staking contract
-    return { success: true, signature: 'placeholder' }; // Placeholder
+  
+  // Helper methods for blockchain operations
+  async createRewardDistributionTx(distributionData) {
+    // Mock implementation - would create actual Solana transaction
+    return {
+      signature: 'mock_reward_dist_' + Date.now(),
+      success: true
+    };
   }
-
-  async unlockStakedTokens(user, amount) {
-    // Return tokens from staking contract to user
-    return { success: true, signature: 'placeholder' }; // Placeholder
+  
+  async createVaultFundingTx(fundingData) {
+    // Mock implementation - would create actual vault funding transaction
+    return {
+      signature: 'mock_vault_fund_' + Date.now(),
+      success: true
+    };
   }
 }
 

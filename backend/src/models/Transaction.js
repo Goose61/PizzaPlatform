@@ -31,15 +31,12 @@ const transactionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: [
-      'payment',       // QR payment to merchant
-      'swap',          // Jupiter token swap
-      'transfer',      // Direct token transfer
-      'mint',          // SPL token minting
-      'stake',         // Staking operation
-      'unstake',       // Unstaking operation
-      'reward',        // Loyalty reward distribution
-      'deposit',       // Fiat to crypto conversion
-      'withdrawal'     // Crypto to fiat conversion
+      'payment',           // Fixed $15 USDC QR payment  
+      'reward_distribution', // 0.3 $PIZZA SPL reward
+      'gift_card_mint',    // Gift card NFT minting
+      'gift_card_redeem',  // Gift card redemption
+      'vault_contribution', // Platform vault funding
+      'kamino_staking'    // CN business staking
     ],
     required: true
   },
@@ -50,7 +47,14 @@ const transactionSchema = new mongoose.Schema({
     default: 'pending'
   },
   
-  // Transaction amounts and tokens
+  // Standardized transaction amount (fixed $15 USDC)
+  amount: {
+    type: Number,
+    default: 15, // Fixed $15 USDC per transaction
+    required: true
+  },
+  
+  // Token details for swaps and conversions
   inputToken: {
     mint: String,
     amount: Number,
@@ -63,21 +67,22 @@ const transactionSchema = new mongoose.Schema({
     symbol: String
   },
   
-  // Payment specific fields
-  merchantWallet: {
-    type: String,
-    validate: {
-      validator: function(v) {
-        return !v || /^[1-9A-HJ-NP-Za-km-z]{44}$/.test(v);
-      },
-      message: 'Invalid merchant wallet address'
-    }
+  // Business/merchant information
+  businessId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Business',
+    index: true
   },
   
-  merchantInfo: {
+  businessInfo: {
     name: String,
-    location: String,
-    category: String
+    type: {
+      type: String,
+      enum: ['CN'],
+      default: 'CN'
+    },
+    category: String,
+    walletAddress: String
   },
   
   // QR payment reference
@@ -86,42 +91,44 @@ const transactionSchema = new mongoose.Schema({
     index: true
   },
   
-  // Swap specific fields
-  swapDetails: {
-    inputMint: String,
-    outputMint: String,
-    inputAmount: Number,
-    outputAmount: Number,
-    minimumReceived: Number,
-    slippage: Number,
-    priceImpact: Number,
-    route: [{
-      swapInfo: {
-        ammKey: String,
-        label: String,
-        inputMint: String,
-        outputMint: String,
-        inAmount: String,
-        outAmount: String,
-        feeAmount: String,
-        feeMint: String
-      }
-    }]
+  // Jupiter swap details for $PIZZA SPL to USDC conversion
+  jupiterSwap: {
+    inputMint: String,   // $PIZZA SPL mint
+    outputMint: String,  // USDC mint
+    inputAmount: Number, // Amount of $PIZZA SPL
+    outputAmount: Number, // USDC received
+    swapLoss: {
+      type: Number,
+      default: 0.0075    // 0.75% customer-absorbed loss
+    },
+    route: mongoose.Schema.Types.Mixed, // Jupiter route info
+    priceImpact: Number
   },
   
-  // Fee information
+  // Fee breakdown (standardized for all CN businesses)
   fees: {
-    networkFee: {
-      type: Number,
-      default: 0
-    },
     platformFee: {
       type: Number,
-      default: 0
+      required: true,
+      default: 0.15 // 1% of $15 = $0.15
     },
-    swapFee: {
+    vaultContribution: {
       type: Number,
-      default: 0
+      required: true,
+      default: 0.195 // 1.3% of $15 = $0.195
+    },
+    totalFees: {
+      type: Number,
+      required: true,
+      default: 0.345 // $0.15 + $0.195 = $0.345
+    },
+    networkFee: {
+      type: Number,
+      default: 0.00025 // Solana network fee
+    },
+    jupiterSwapFee: {
+      type: Number,
+      default: 0 // 0.75% customer-absorbed for $PIZZA SPL swaps
     }
   },
   
@@ -140,38 +147,42 @@ const transactionSchema = new mongoose.Schema({
     details: mongoose.Schema.Types.Mixed
   },
   
-  // Compliance tracking
-  compliance: {
-    kycRequired: {
+  // Settlement tracking (CN businesses only - USDC retain)
+  settlement: {
+    method: {
+      type: String,
+      enum: ['usdc-retain'],
+      default: 'usdc-retain',
+      required: function() {
+        return this.type === 'payment';
+      }
+    },
+    processed: {
       type: Boolean,
       default: false
     },
-    kycVerified: {
-      type: Boolean,
-      default: false
-    },
-    dailyLimitCheck: {
-      type: Boolean,
-      default: false
-    },
-    riskScore: {
+    netAmount: {
       type: Number,
-      min: 0,
-      max: 100,
-      default: 0
-    }
+      default: 14.655 // $15 - $0.345 fees = $14.655
+    },
+    settlementDate: Date
   },
   
-  // Loyalty and rewards
-  loyaltyPoints: {
-    earned: {
+  // Reward distribution (fixed 0.3 $PIZZA SPL per $15 transaction)
+  rewards: {
+    pizzaTokensDistributed: {
       type: Number,
-      default: 0
+      default: 0.3 // Fixed 0.3 $PIZZA SPL per transaction
     },
-    redeemed: {
+    giftCardIssued: {
+      type: Boolean,
+      default: false
+    },
+    vaultFunded: {
       type: Number,
-      default: 0
-    }
+      default: 0.195 // $0.195 vault contribution per transaction
+    },
+    distributionTransactionId: String // Solana tx for reward distribution
   },
   
   // Metadata
@@ -195,15 +206,16 @@ const transactionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance and queries
-transactionSchema.index({ signature: 1 });
+// Updated indexes for new schema (signature already indexed via unique: true)
 transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ businessId: 1, createdAt: -1 });
 transactionSchema.index({ walletAddress: 1, createdAt: -1 });
 transactionSchema.index({ type: 1, status: 1 });
-transactionSchema.index({ paymentReference: 1 });
-transactionSchema.index({ merchantWallet: 1, createdAt: -1 });
-transactionSchema.index({ 'inputToken.mint': 1 });
-transactionSchema.index({ 'outputToken.mint': 1 });
+transactionSchema.index({ amount: 1 }); // Fixed $15 transactions
+transactionSchema.index({ 'businessInfo.type': 1 }); // CN business filtering
+transactionSchema.index({ 'settlement.method': 1 });
+transactionSchema.index({ 'settlement.processed': 1 });
+transactionSchema.index({ 'rewards.pizzaTokensDistributed': 1 });
 transactionSchema.index({ blockTime: -1 });
 
 // Virtual for transaction value in USD (requires price data)
@@ -230,8 +242,21 @@ transactionSchema.methods.markFailed = function(error) {
   return this.save();
 };
 
-transactionSchema.methods.addLoyaltyPoints = function(points) {
-  this.loyaltyPoints.earned += points;
+// Method to record reward distribution
+transactionSchema.methods.recordRewardDistribution = function(rewardData) {
+  this.rewards.pizzaTokensDistributed = rewardData.tokens || 0.3;
+  this.rewards.giftCardIssued = rewardData.giftCardIssued || false;
+  this.rewards.vaultFunded = rewardData.vaultContribution || 0;
+  this.rewards.distributionTransactionId = rewardData.transactionId;
+  return this.save();
+};
+
+// Method to process settlement
+transactionSchema.methods.processSettlement = function(settlementData) {
+  this.settlement.processed = true;
+  this.settlement.rampTransactionId = settlementData.rampTransactionId;
+  this.settlement.netAmount = settlementData.netAmount;
+  this.settlement.settlementDate = new Date();
   return this.save();
 };
 
@@ -268,6 +293,7 @@ transactionSchema.statics.findByType = function(type, startDate, endDate, limit 
     .limit(limit);
 };
 
+// Get transaction stats with new fixed amount structure
 transactionSchema.statics.getTransactionStats = function(userId, startDate, endDate) {
   const matchStage = { userId: new mongoose.Types.ObjectId(userId) };
   
@@ -283,8 +309,10 @@ transactionSchema.statics.getTransactionStats = function(userId, startDate, endD
       $group: {
         _id: '$type',
         count: { $sum: 1 },
-        totalAmount: { $sum: '$inputToken.amount' },
-        avgAmount: { $avg: '$inputToken.amount' },
+        totalAmount: { $sum: '$amount' }, // Fixed $15 amounts
+        avgAmount: { $avg: '$amount' },
+        totalRewards: { $sum: '$rewards.pizzaTokensDistributed' },
+        totalVaultContributions: { $sum: '$rewards.vaultFunded' },
         successfulCount: {
           $sum: { $cond: [{ $eq: ['$status', 'confirmed'] }, 1, 0] }
         }
@@ -296,6 +324,8 @@ transactionSchema.statics.getTransactionStats = function(userId, startDate, endD
         count: 1,
         totalAmount: 1,
         avgAmount: 1,
+        totalRewards: 1,
+        totalVaultContributions: 1,
         successfulCount: 1,
         successRate: {
           $multiply: [
@@ -308,6 +338,59 @@ transactionSchema.statics.getTransactionStats = function(userId, startDate, endD
   ]);
 };
 
+// Get business type specific stats
+transactionSchema.statics.getBusinessTypeStats = function(businessType, startDate, endDate) {
+  const matchStage = {
+    'businessInfo.type': businessType,
+    type: 'payment',
+    status: 'confirmed'
+  };
+  
+  if (startDate || endDate) {
+    matchStage.createdAt = {};
+    if (startDate) matchStage.createdAt.$gte = new Date(startDate);
+    if (endDate) matchStage.createdAt.$lte = new Date(endDate);
+  }
+  
+  return this.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: null,
+        totalTransactions: { $sum: 1 },
+        totalVolume: { $sum: '$amount' },
+        totalPlatformFees: { $sum: '$fees.platformFee' },
+        totalVaultContributions: { $sum: '$fees.vaultContribution' },
+        totalRewardsDistributed: { $sum: '$rewards.pizzaTokensDistributed' },
+        averageTransactionValue: { $avg: '$amount' },
+        uniqueBusinesses: { $addToSet: '$businessId' },
+        settledCount: {
+          $sum: { $cond: ['$settlement.processed', 1, 0] }
+        }
+      }
+    },
+    {
+      $project: {
+        businessType: businessType,
+        totalTransactions: 1,
+        totalVolume: 1,
+        totalPlatformFees: 1,
+        totalVaultContributions: 1,
+        totalRewardsDistributed: 1,
+        averageTransactionValue: 1,
+        uniqueBusinessCount: { $size: '$uniqueBusinesses' },
+        settlementRate: {
+          $multiply: [
+            { $divide: ['$settledCount', '$totalTransactions'] },
+            100
+          ]
+        }
+      }
+    }
+  ]);
+};
+
+// Get daily volume with platform vault contributions
 transactionSchema.statics.getDailyVolume = function(days = 30) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
@@ -316,7 +399,8 @@ transactionSchema.statics.getDailyVolume = function(days = 30) {
     {
       $match: {
         createdAt: { $gte: startDate },
-        status: 'confirmed'
+        status: 'confirmed',
+        type: 'payment'
       }
     },
     {
@@ -327,8 +411,15 @@ transactionSchema.statics.getDailyVolume = function(days = 30) {
           day: { $dayOfMonth: '$createdAt' }
         },
         totalTransactions: { $sum: 1 },
-        totalVolume: { $sum: '$inputToken.amount' },
-        uniqueUsers: { $addToSet: '$userId' }
+        totalVolume: { $sum: '$amount' }, // All $15 transactions
+        totalPlatformFees: { $sum: '$fees.platformFee' },
+        totalVaultContributions: { $sum: '$fees.vaultContribution' },
+        totalRewards: { $sum: '$rewards.pizzaTokensDistributed' },
+        cnTransactions: {
+          $sum: { $cond: [{ $eq: ['$businessInfo.type', 'CN'] }, 1, 0] }
+        },
+        uniqueUsers: { $addToSet: '$userId' },
+        uniqueBusinesses: { $addToSet: '$businessId' }
       }
     },
     {
@@ -342,10 +433,58 @@ transactionSchema.statics.getDailyVolume = function(days = 30) {
         },
         totalTransactions: 1,
         totalVolume: 1,
-        uniqueUserCount: { $size: '$uniqueUsers' }
+        totalPlatformFees: 1,
+        totalVaultContributions: 1,
+        totalRewards: 1,
+        cnTransactions: 1,
+        uniqueUserCount: { $size: '$uniqueUsers' },
+        uniqueBusinessCount: { $size: '$uniqueBusinesses' },
+        averageTransactionValue: { $divide: ['$totalVolume', '$totalTransactions'] }
       }
     },
     { $sort: { date: 1 } }
+  ]);
+};
+
+// Get vault contribution summary
+transactionSchema.statics.getVaultContributionSummary = function(startDate, endDate) {
+  const matchStage = {
+    type: 'payment',
+    status: 'confirmed',
+    'fees.vaultContribution': { $gt: 0 }
+  };
+  
+  if (startDate || endDate) {
+    matchStage.createdAt = {};
+    if (startDate) matchStage.createdAt.$gte = new Date(startDate);
+    if (endDate) matchStage.createdAt.$lte = new Date(endDate);
+  }
+  
+  return this.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: null,
+        totalVaultContributions: { $sum: '$fees.vaultContribution' },
+        totalRewardsDistributed: { $sum: '$rewards.pizzaTokensDistributed' },
+        totalTransactions: { $sum: 1 },
+        contributingBusinesses: { $addToSet: '$businessId' }
+      }
+    },
+    {
+      $project: {
+        totalVaultContributions: 1,
+        totalRewardsDistributed: 1,
+        totalTransactions: 1,
+        averageContributionPerTransaction: {
+          $divide: ['$totalVaultContributions', '$totalTransactions']
+        },
+        contributingBusinessCount: { $size: '$contributingBusinesses' },
+        vaultSurplus: {
+          $subtract: ['$totalVaultContributions', { $multiply: ['$totalRewardsDistributed', 0.15] }]
+        } // Assuming $0.15 cost per reward
+      }
+    }
   ]);
 };
 

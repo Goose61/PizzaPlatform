@@ -1,0 +1,624 @@
+/* Enhanced Gallery Styles - Based on Anime.js Gallery */
+
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300,400,500');
+
+.gallery-section {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  padding: 80px 0;
+  overflow: hidden;
+}
+
+.gallery-container {
+  position: relative;
+  display: block;
+  width: 100vmin;
+  height: 80vh;
+  margin: auto;
+  z-index: 100;
+  max-width: 1200px;
+  /* Ensure gallery doesn't interfere with page scrolling */
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.gallery-container .carousel {
+  position: absolute;
+  transform: translateY(100%);
+  will-change: transform;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+.gallery-container .carousel .info_back {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 13vh;
+  z-index: 30;
+  text-align: center;
+}
+
+.gallery-container .carousel .info_back h1 {
+  text-align: center;
+  color: white;
+  margin-top: 1vh;
+  font-weight: 300;
+  font-size: 3vh;
+  text-transform: uppercase;
+  letter-spacing: 15px;
+  opacity: 0;
+}
+
+/* Mobile modal header fixes */
+@media (max-width: 768px) {
+  .gallery-container .carousel .info_back h1 {
+    font-size: 2.5vh;
+    letter-spacing: 8px;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .gallery-container .carousel .citem h1 {
+    font-size: 2.5vh;
+    letter-spacing: 8px;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-container .carousel .info_back h1 {
+    font-size: 2vh;
+    letter-spacing: 5px;
+    line-height: 1.1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .gallery-container .carousel .citem h1 {
+    font-size: 2vh;
+    letter-spacing: 5px;
+    line-height: 1.1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+.gallery-container .carousel .info_back h1 .letter {
+  display: inline-block;
+  line-height: 1em;
+  opacity: 0;
+}
+
+.gallery-container .carousel .info_back:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(transparent, black);
+  opacity: 1;
+}
+
+.gallery-container .carousel .info_back .close-modal-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.gallery-container .carousel .info_back .close-modal-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.gallery-container .carousel .active {
+  display: block !important;
+}
+
+.gallery-container .carousel .citem {
+  display: none;
+  background: white;
+  width: 100%;
+  height: 100%;
+  text-align: justify;
+  transition: all 0.4s;
+}
+
+.gallery-container .carousel .citem h1 {
+  color: black;
+  font-weight: 400;
+  margin-top: 15vh;
+  padding: 2vmin 7vmin;
+  display: block;
+  width: 100%;
+  background: #eee;
+}
+
+.gallery-container .carousel .citem p {
+  color: #777;
+  font-size: 15px;
+  padding: 20px 7vmin;
+}
+
+.gallery-container .carousel .citem p span {
+  color: #555;
+  font-size: 19px;
+  display: block;
+  padding: 15px 0;
+}
+
+.gallery-container .carousel .citem ul {
+  color: #777;
+  padding: 0 12vmin;
+}
+
+.gallery-container .menu {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background: white;
+  display: none;
+}
+
+.gallery-container .menu .close {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  background: rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.gallery-container .content {
+  position: relative;
+  width: 100%;
+  height: 73vh;
+  text-align: center;
+}
+
+.gallery-container .content .title {
+  font-weight: 300;
+  font-size: 5.8vh;
+  color: #ccc;
+  letter-spacing: 15px;
+  text-transform: uppercase;
+  padding-top: 6vh;
+  opacity: 0;
+}
+
+.gallery-container .content .title .letter {
+  display: inline-block;
+  line-height: 1em;
+  opacity: 0;
+}
+
+.gallery-container .content .helmet {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 9vmin;
+}
+
+.gallery-container .content .helmet img {
+  position: absolute;
+  width: 90vmin;
+  margin: auto;
+  top: 11vmin;
+  bottom: 0vmin;
+  left: 0;
+  right: 0;
+  user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.gallery-container .content .helmet .planet_position {
+  position: absolute;
+  width: 45vmin;
+  height: 45vmin;
+  background: black;
+  box-shadow: 0 10px 20px 10px rgba(0,0,0,1);
+  border-radius: 50%;
+  margin: auto;
+  top: -5vmin;
+  bottom: 8vmin;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+
+
+.gallery-container .content .helmet .planet_position .planet_shadow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-shadow: inset 0 -1.5vmax 3vmax 1.2vmax rgba(0,0,0,1);
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.gallery-container .content .helmet .planet_position .planet_photo {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url("../images/pizza/campaign-gallery/photo_1_2025-08-01_12-08-13.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  z-index: 1;
+  will-change: background;
+}
+
+.gallery-container .bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 28vh;
+}
+
+.gallery-container .bottom .nav {
+  width: 100%;
+  height: 40px;
+  padding-top: 15px;
+}
+
+.gallery-container .bottom .nav span {
+  color: #999;
+  cursor: pointer;
+}
+
+.gallery-container .bottom .nav span i {
+  font-size: 40px;
+  font-weight: 200;
+}
+
+.gallery-container .bottom .nav span:nth-child(1) {
+  padding-left: 10vmin;
+}
+
+.gallery-container .bottom .nav span:nth-child(2) {
+  padding-right: 10vmin;
+  float: right;
+}
+
+.gallery-container .bottom .orbit {
+  position: absolute;
+  top: 5vh;
+  width: 100%;
+  height: 100vmin;
+  border-radius: 50%;
+  border: 3px solid #eee;
+  margin: auto;
+  left: 0;
+  right: 0;
+}
+
+.gallery-container .bottom .orbit .planet_container {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: transform 0.7s ease-in;
+}
+
+.gallery-container .bottom .orbit .planet_container .planet {
+  position: absolute;
+  border-radius: 50%;
+  width: 5vmin;
+  height: 5vmin;
+  transition: transform 0.4s linear;
+  will-change: transform;
+}
+
+.gallery-container .bottom .orbit .planet_container .pt {
+  transition: transform 0.4s ease-in;
+  transform: scale(1.7);
+  will-change: transform;
+}
+
+.gallery-container .bottom .orbit .planet_container .earth {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  top: -2.5vmin;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.gallery-container .bottom .orbit .planet_container .earth .moon span {
+  top: -1vmin;
+  left: -1vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .mars {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  right: 12vmin;
+  top: 12vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .mars .moon span {
+  width: 0.5vmin;
+  height: 0.5vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .mars .moon span:nth-child(1) {
+  top: -1vmin;
+  left: -1vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .mars .moon span:nth-child(2) {
+  left: 1vmin;
+  bottom: -1vmin !important;
+}
+
+.gallery-container .bottom .orbit .planet_container .jupiter {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  right: -2.5vmin;
+  bottom: 46.5vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .saturn {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  right: 12vmin;
+  bottom: 12vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .saturn .ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 0 5px white, 0 0 0 8px rgba(0,0,0,0.5), 0 0 0 12px #d6d6c2;
+  border-radius: 50%;
+}
+
+.gallery-container .bottom .orbit .planet_container .uranus {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  right: 0;
+  left: 0;
+  margin: auto;
+  bottom: -2.5vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .neptune {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  left: 12vmin;
+  bottom: 12vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .mercury {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  left: -2.5vmin;
+  bottom: 46.5vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .venus {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  left: 12vmin;
+  top: 12vmin;
+}
+
+.gallery-container .bottom .orbit .planet_container .pluto {
+  background: url("../images/pizza-planet.png") center center;
+  background-size: cover;
+  left: -2.5vmin;
+  top: 46.5vmin;
+}
+
+.gallery-container .bottom .orbit .name_container {
+  position: absolute;
+  display: flex;
+  width: auto;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 12vh;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.gallery-container .bottom .orbit .name_container .more {
+  width: 100%;
+  padding: 8px 0;
+  color: #bbb;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.gallery-container .bottom .orbit .name_container .more:hover {
+  color: #888;
+  transition: color 0.3s;
+}
+
+.gallery-container .bottom .orbit .name_container .pn {
+  font-size: 25px;
+  color: #666;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+  letter-spacing: 8px;
+  padding-left: 8px;
+  border-bottom: 3px solid #bbb;
+}
+
+.gallery-container .bottom .orbit .name_container .pn .letter {
+  display: inline-block;
+  line-height: 1em;
+  opacity: 0;
+}
+
+.moon {
+  width: 100%;
+  height: 100%;
+  animation: planet_rotation 2s infinite linear;
+}
+
+.moon span {
+  width: 0.8vmin;
+  height: 0.8vmin;
+  background: black;
+  border-radius: 50%;
+  position: absolute;
+}
+
+@keyframes planet_rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gallery-container {
+    width: 95vmin;
+    height: 70vh;
+  }
+  
+  .gallery-container .content .helmet img {
+    width: 80vmin;
+  }
+  
+  .gallery-container .content .helmet .planet_position {
+    width: 40vmin;
+    height: 40vmin;
+    top: -3vmin;
+    bottom: 6vmin;
+  }
+  
+  .gallery-container .bottom .orbit .name_container {
+    top: 10vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-container {
+    width: 100vmin;
+    height: 60vh;
+  }
+  
+  .gallery-container .content .helmet img {
+    width: 70vmin;
+  }
+  
+  .gallery-container .content .helmet .planet_position {
+    width: 35vmin;
+    height: 35vmin;
+    top: -2vmin;
+    bottom: 5vmin;
+  }
+  
+  .gallery-container .bottom .orbit .name_container {
+    top: 8vh;
+  }
+}
+
+/* Mobile-specific touch improvements for gallery */
+@media (max-width: 768px) {
+  .gallery-container {
+    /* Ensure proper touch scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Allow page scrolling */
+    touch-action: pan-y;
+    /* Prevent gallery from blocking page scroll */
+    pointer-events: auto;
+  }
+  
+  /* Only the orbital ring should capture touch events */
+  .gallery-container .bottom .orbit {
+    pointer-events: auto;
+    touch-action: pan-x;
+  }
+  
+  .gallery-container .bottom .orbit .planet_container {
+    pointer-events: auto;
+  }
+  
+  .gallery-container .bottom .orbit .planet_container .planet {
+    pointer-events: auto;
+  }
+  
+  .gallery-container .bottom .orbit .name_container {
+    pointer-events: auto;
+  }
+  
+  /* Ensure other gallery areas don't interfere with page scroll */
+  .gallery-container .content {
+    pointer-events: none;
+  }
+  
+  .gallery-container .content .helmet {
+    pointer-events: none;
+  }
+  
+  .gallery-container .bottom .nav {
+    pointer-events: auto;
+  }
+  
+  /* Improve touch targets for navigation */
+  .gallery-container .bottom .nav span {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Better mobile spacing for gallery content */
+  .gallery-container .carousel .info_back {
+    padding: 20px;
+  }
+  
+  .gallery-container .carousel .info_back h1 {
+    font-size: 1.5rem;
+  }
+  
+  .gallery-container .carousel .citem h1 {
+    font-size: 1.5rem;
+  }
+  
+  .gallery-container .carousel .citem p {
+    font-size: 0.9rem;
+  }
+  
+  /* Improve close button touch target */
+  .gallery-container .carousel .info_back .close-modal-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+} 

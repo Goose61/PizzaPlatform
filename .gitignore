@@ -144,3 +144,5 @@ vulnerability-report.json
 .config
 *.env
 .env.* 
+
+new-frontend/

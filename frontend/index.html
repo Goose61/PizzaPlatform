@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Content Security Policy - Optimized for Google Drive and external resources -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://code.jquery.com https://unpkg.com https://cdn.jsdelivr.net https://drive.google.com https://clients6.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://drive.google.com; frame-src 'self' https://drive.google.com https://docs.google.com https://accounts.google.com https://clients6.google.com https://*.google.com; connect-src 'self' https: wss: data: https://*.google.com https://*.googleapis.com https://ogads-pa.clients6.google.com https://unpkg.com; img-src 'self' data: https: blob: https://*.google.com https://unpkg.com; font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com;">
+
+  <!-- 
+    - primary meta tags
+  -->
+  <title>🍕 PIZZA COIN 🚀 - Feeding the Blockchain, One Slice at a Time!</title>
+  <meta name="title" content="🍕 PIZZA COIN 🚀 - Feeding the Blockchain, One Slice at a Time!">
+  <meta name="description" content="Empowering communities through food, compassion, and blockchain — using the Pizza Token to earn more tokens and build your own pizza empire!">
+
+  <!-- 
+    - favicon
+  -->
+  <link rel="shortcut icon" href="./assets/images/pizza/favicon.svg" type="image/svg+xml">
+
+  <!-- 
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Forum&display=swap" rel="stylesheet">
+
+  <!-- 
+    - custom css link
+  -->
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/pizza-custom.css">
+  <link rel="stylesheet" href="./assets/css/gallery.css">
+
+  <!-- 
+    - anime.js for animations
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  
+  <!-- 
+    - jQuery for gallery functionality
+  -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- 
+    - Hammer.js for touch gestures
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+  
+  <!-- 
+    - Material Icons for gallery
+  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- 
+    - Leaflet CSS for maps
+  -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- 
+    - Video container aspect ratio - 1:1 square ratio
+  -->
+  <style>
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Perfect 1:1 square ratio */
+      overflow: hidden;
+    }
+    
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      border: none;
+    }
+    
+    .video-item {
+      width: 100%;
+      flex: 0 0 auto;
+    }
+  </style>
+
+  <!-- 
+    - preload images
+  -->
+  <link rel="preload" as="image" href="./assets/images/hero-slider-1.jpg">
+  <link rel="preload" as="image" href="./assets/images/hero-slider-2.jpg">
+  <link rel="preload" as="image" href="./assets/images/hero-slider-3.jpg">
+
+</head>
+
+<body id="top">
+
+  <!-- 
+    - #PRELOADER
+  -->
+
+  <div class="preload" data-preload>
+    <div class="circle"></div>
+    <p class="text">🍕 PIZZA COIN 🚀</p>
+  </div>
+
+  <!-- 
+    - #TOP BAR
+  -->
+
+  <div class="topbar">
+    <div class="container">
+
+      <address class="topbar-item">
+        <div class="icon">
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+        </div>
+
+        <span class="span">
+          Global Pizza Community, Feeding the Blockchain, Everywhere
+        </span>
+      </address>
+
+      <div class="separator"></div>
+
+      <div class="topbar-item item-2">
+        <div class="icon">
+          <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+        </div>
+
+        <span class="span">24/7 : Always Serving Pizza & Hope</span>
+      </div>
+
+      <a href="https://t.me/+PrL-wbxrW39kODBk" class="topbar-item link">
+        <div class="icon">
+          <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+        </div>
+
+        <span class="span">Join Our Telegram</span>
+      </a>
+
+      <div class="separator"></div>
+
+      <a href="mailto:info@pizzacoin.com" class="topbar-item link">
+        <div class="icon">
+          <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+        </div>
+
+        <span class="span">pizzahub@pizzabit.io</span>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- 
+    - #HEADER
+  -->
+
+  <header class="header" data-header>
+    <div class="container">
+
+      <a href="#" class="logo">
+        <img src="./assets/images/pizza/pizzaimages/main_logo.png" width="160" height="50" alt="Pizza Coin - Home">
+      </a>
+
+      <nav class="navbar" data-navbar>
+
+        <button class="close-btn" aria-label="close menu" data-nav-toggler>
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+
+        <a href="#" class="logo">
+          <img src="./assets/images/pizza/pizzaimages/main_logo.png" width="160" height="50" alt="Pizza Coin - Home">
+        </a>
+
+        <ul class="navbar-list">
+
+          <li class="navbar-item">
+            <a href="#home" class="navbar-link hover-underline active">
+              <div class="separator"></div>
+              <span class="span">Home</span>
+            </a>
+          </li>
+
+          <li class="navbar-item">
+            <a href="#mission" class="navbar-link hover-underline">
+              <div class="separator"></div>
+              <span class="span">Mission</span>
+            </a>
+          </li>
+
+          <li class="navbar-item">
+            <a href="#gallery" class="navbar-link hover-underline">
+              <div class="separator"></div>
+              <span class="span">Gallery</span>
+            </a>
+          </li>
+
+          <li class="navbar-item">
+            <a href="#community" class="navbar-link hover-underline">
+              <div class="separator"></div>
+              <span class="span">Community</span>
+            </a>
+          </li>
+
+        </ul>
+
+        <div class="text-center">
+          <p class="headline-1 navbar-title">Join The Pizza Base</p>
+
+          <address class="body-4">
+            Global Pizza Community, <br>
+            Feeding the Blockchain
+          </address>
+
+          <p class="body-4 navbar-text">Open: 24/7 - Always Serving</p>
+
+          <a href="mailto:pizzahub@pizzabit.io" class="body-4 sidebar-link">pizzahub@pizzabit.io</a>
+
+          <div class="separator"></div>
+
+          <p class="contact-label">Contract Address</p>
+
+          <a href="#" class="body-1 contact-number hover-underline">
+            4AkCN6KLeCmUDjWLg4XyQpuZuWtwBdPcbtBQjsA2pump
+          </a>
+
+          <div class="separator"></div>
+
+          <!-- Social Buttons in Hamburger Menu -->
+          <div class="social-buttons">
+            <a href="https://t.me/+PrL-wbxrW39kODBk" class="social-btn telegram-btn">
+              <ion-icon name="paper-plane-outline"></ion-icon>
+              <span>Join Telegram</span>
+            </a>
+            
+            <a href="https://x.com/Pizza_on__Sol" class="social-btn x-btn">
+              <ion-icon name="logo-twitter"></ion-icon>
+              <span>Follow on X</span>
+            </a>
+          </div>
+        </div>
+
+      </nav>
+
+      <a href="https://t.me/+PrL-wbxrW39kODBk" class="btn btn-secondary">
+        <span class="text text-1">Join Telegram</span>
+        <span class="text text-2" aria-hidden="true">Join Telegram</span>
+      </a>
+
+      <a href="https://x.com/Pizza_on__Sol" class="btn btn-secondary">
+        <span class="text text-1">Visit X</span>
+        <span class="text text-2" aria-hidden="true">Visit X</span>
+      </a>
+
+      <button class="nav-open-btn" aria-label="open menu" data-nav-toggler>
+        <span class="line line-1"></span>
+        <span class="line line-2"></span>
+        <span class="line line-3"></span>
+      </button>
+
+      <div class="overlay" data-nav-toggler data-overlay></div>
+
+    </div>
+  </header>
+
+  <main>
+    <article>
+
+      <!-- 
+        - #HERO
+      -->
+
+      <section class="hero text-center" aria-label="home" id="home">
+
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-1.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-2.png" alt="Pizza Shape">
+        </div>
+
+        <ul class="hero-slider" data-hero-slider>
+
+          <li class="slider-item active" data-hero-slider-item>
+
+            <div class="slider-bg">
+              <img src="./assets/images/hero-slider-1.jpg" width="1880" height="950" alt="" class="img-cover">
+            </div>
+
+            <p class="label-2 section-subtitle slider-reveal">🔥 HOTTEST PIZZA TOKEN 🔥</p>
+
+            <h1 class="display-1 hero-title slider-reveal">
+              FEEDING THE BLOCKCHAIN, <br>
+              ONE SLICE AT A TIME!
+            </h1>
+
+            <p class="body-2 hero-text slider-reveal">
+              Empowering communities through pizza and blockchain technology!
+            </p>
+
+            <a href="#pizza-builder" class="btn btn-primary slider-reveal">
+              <span class="text text-1">Build $PIZZA</span>
+              <span class="text text-2" aria-hidden="true">Build $PIZZA</span>
+            </a>
+
+          </li>
+
+          <li class="slider-item" data-hero-slider-item>
+
+            <div class="slider-bg">
+              <img src="./assets/images/hero-slider-2.jpg" width="1880" height="950" alt="" class="img-cover">
+            </div>
+
+            <p class="label-2 section-subtitle slider-reveal">delightful experience</p>
+
+            <h1 class="display-1 hero-title slider-reveal">
+               The Future of Food <br>
+              and Finance is Here!
+            </h1>
+
+            <p class="body-2 hero-text slider-reveal">
+              Exceptional technology combined with real-world deliciousness
+            </p>
+
+          </li>
+
+          <li class="slider-item" data-hero-slider-item>
+
+            <div class="slider-bg">
+              <img src="./assets/images/hero-slider-3.jpg" width="1880" height="950" alt="" class="img-cover">
+            </div>
+
+            <p class="label-2 section-subtitle slider-reveal">amazing & delicious</p>
+
+            <h1 class="display-1 hero-title slider-reveal">
+              Where every flavor <br>
+              tells a story
+            </h1>
+
+            <p class="body-2 hero-text slider-reveal">
+              Savor the taste of innovation with every $PIZZA token earned              
+            </p>
+
+          </li>
+
+        </ul>
+
+        <button class="slider-btn prev" aria-label="slide to previous" data-prev-btn>
+          <div class="btn-icon">
+            <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+            <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+          </div>
+        </button>
+
+        <button class="slider-btn next" aria-label="slide to next" data-next-btn>
+          <div class="btn-icon">
+            <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+            <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+          </div>
+        </button>
+
+        <a href="#pizza-builder" class="hero-btn has-before" aria-label="scroll down">
+          <div class="icon">
+            <ion-icon name="arrow-down" aria-hidden="true"></ion-icon>
+          </div>
+
+          <span class="span">Scroll</span>
+        </a>
+
+      </section>
+
+      <!-- 
+        - #MARKETING SECTION
+      -->
+
+      <section class="marketing-section section" aria-label="marketing" id="marketing">
+        <div class="container">
+
+          <!-- Background Shapes -->
+          <div class="shape shape-1 desktop-only">
+            <img src="./assets/images/shape-3.png" alt="Pizza Shape">
+          </div>
+          <div class="shape shape-2 desktop-only">
+            <img src="./assets/images/shape-4.png" alt="Pizza Shape">
+          </div>
+          <div class="shape shape-3 desktop-only">
+            <img src="./assets/images/shape-5.png" alt="Pizza Shape">
+          </div>
+
+          <p class="section-subtitle text-center">🚀 PIZZA EXCHANGE PLATFORM 🚀</p>
+
+          <h2 class="headline-1 section-title text-center">
+            The Future of Food & Finance is Here!
+          </h2>
+
+          <p class="section-text text-center">
+            ​$PIZZA is more than just a cryptocurrency—it's a payment and reward ecosystem that brings together digital finance and real-world deliciousness. We are building a community-driven platform where every transaction not only rewards you, but also supports local businesses.
+          </p>
+
+          <div class="marketing-grid">
+
+            <div class="marketing-card">
+              <div class="card-icon">
+                <ion-icon name="wallet-outline"></ion-icon>
+              </div>
+              <h3>​Dine & Earn</h3>
+              <p>
+                We're bridging the gap between crypto and your favorite local pizzerias. Partner restaurants will offer exclusive promos and discounts for customers who use $PIZZA. Imagine getting a deal on your favorite slice or earning extra rewards just for using crypto.
+              </p>
+              </div>
+
+            <div class="marketing-card">
+              <div class="card-icon">
+                <ion-icon name="gift-outline"></ion-icon>
+              </div>
+              <h3>​Play & Win</h3>
+              <p>
+                We're making crypto fun and interactive with custom-built games! Our games, like $PIZZA Defenders and $PIZZA Entrepreneurs, are not just for entertainment—they’re a core part of our ecosystem. Players can use the $PIZZA coin for in-game upgrades and expansions.
+              </p>
+            </div>
+
+            <div class="marketing-card">
+              <div class="card-icon">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+              </div>
+              <h3>​Smart & Connected</h3>
+              <p>
+                We use the power of Artificial Intelligence to enhance our community and marketing efforts. Our AI will work both on and off-chain to promote marketing materials with precision and attract users interested in Real-World Assets (RWA) and Tokenization.
+              </p>
+            </div>
+
+            <div class="marketing-card">
+              <div class="card-icon">
+                <ion-icon name="business-outline"></ion-icon>
+              </div>
+              <h3>​Community & Giving Back</h3>
+              <p> 
+                At our core, we believe in supporting the communities we serve. A portion of our profits and transaction fees will be used for local donations, turning every $PIZZA transaction into an act of community support. When you use $PIZZA, you’re not just getting a reward, you're helping others.
+              </p>
+            </div>
+
+          </div>
+
+          <div class="marketing-cta">
+            <a href="./platform-index.html" class="btn btn-primary" target="_self">
+              <span class="text text-1">Register Now</span>
+              <span class="text text-2" aria-hidden="true">Register Now</span>
+            </a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #PIZZA BUILDER SECTION
+      -->
+
+      <section class="section pizza-builder-section bg-black-10 text-center" aria-label="pizza-builder" id="pizza-builder">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-6.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-7.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle label-2">🍕 $PIZZA TOKEN LAYERS 🍕</p>
+
+          <h2 class="headline-1 section-title">Building $PIZZA Layer by Layer</h2>
+
+          <p class="section-text">
+            Discover how our $PIZZA token is structured like a perfect pizza - each layer represents a core component of our mission
+          </p>
+
+        </div>
+        
+        <!-- Pizza Builder Animation Container -->
+        <div id="pizza-container">
+          <div id="crust" class="pizza-layer"></div>
+          <div id="sauce" class="pizza-layer"></div>
+          <div id="cheese" class="pizza-layer"></div>
+          <div id="toppings" class="pizza-layer">
+            <!-- Pepperoni positions - Using percentage-based positioning for responsive scaling -->
+            <!-- Top left quadrant -->
+            <div class="pepperoni" style="top: 15%; left: 20%;"></div>
+            <div class="pepperoni" style="top: 30%; left: 25%;"></div>
+            
+            <!-- Top right quadrant -->
+            <div class="pepperoni" style="top: 20%; left: 65%;"></div>
+            <div class="pepperoni" style="top: 35%; left: 70%;"></div>
+            
+            <!-- Bottom left quadrant -->
+            <div class="pepperoni" style="top: 60%; left: 22%;"></div>
+            <div class="pepperoni" style="top: 75%; left: 28%;"></div>
+            
+            <!-- Bottom right quadrant -->
+            <div class="pepperoni" style="top: 65%; left: 68%;"></div>
+            
+            <!-- Center area -->
+            <div class="pepperoni" style="top: 45%; left: 45%;"></div>
+          </div>
+        </div>
+
+        <!-- Layer Info Elements -->
+        <div id="crust-info" class="layer-info">
+          <h4>🍕 Core Team</h4>
+          <p>The foundation of $PIZZA - our dedicated core team building the future of pizza finance.</p>
+        </div>
+        
+        <div id="sauce-info" class="layer-info">
+          <h4>🎯 Mission & Vision</h4>
+          <p>Our mission to revolutionize the pizza industry through blockchain technology and community-driven innovation.</p>
+        </div>
+        
+        <div id="cheese-info" class="layer-info">
+          <h4>💪 Hard Work & Dedication</h4>
+          <p>The dedication and hard work that goes into every aspect of the $PIZZA ecosystem.</p>
+        </div>
+        
+        <div id="toppings-info" class="layer-info">
+          <h4>🚀 Technology Stack</h4>
+          <p>Agent Crust AI, Pizza Defenders game, PIZZA exchange, and cutting-edge blockchain technology.</p>
+        </div>
+
+      </section>
+
+      <!-- 
+        - #MISSION SECTION
+      -->
+
+      <section class="section about text-center" aria-labelledby="about-label" id="mission">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-8.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-9.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <div class="about-content">
+
+            <p class="label-2 section-subtitle" id="about-label">Our Story</p>
+
+            <h2 class="title-1 section-title">🍕🚀 MISSION & VISION 🚀🍕</h2>
+
+            <p class="section-text">
+              To empower communities through food, compassion, and blockchain — using the Pizza Token to feed those in need and connect Main Street to the future of finance! 🍕💎
+            </p>
+
+            <div class="about-banner">
+              <img src="./assets/images/about-banner.jpg" width="580" height="674" alt="Pizza Coin Mission" class="w-100">
+
+              <!-- Badge as stamp overlay -->
+              <div class="badge-stamp">
+                <img src="./assets/images/badge-2.png" alt="Pizza Coin Badge" class="stamp-image">
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mission-blocks">
+
+            <div class="mission-block">
+              <h3>🍕 Our Mission</h3>
+              <p>To revolutionize the pizza industry through blockchain technology, creating a sustainable ecosystem that benefits both businesses and communities. We aim to bridge the gap between traditional commerce and the future of finance, making crypto accessible to everyone through the universal language of pizza.</p>
+            </div>
+
+            <div class="vision-block">
+              <h3>🚀 Our Vision</h3>
+              <p>To become the leading crypto-native payment platform for the food industry, starting with pizza and expanding globally. We envision a world where every transaction contributes to community growth, where technology serves humanity, and where pizza becomes the gateway to financial inclusion.</p>
+            </div>
+
+          </div>
+
+          <div class="text-center">
+            <p class="contact-label">Contract Address</p>
+
+            <a href="https://dexscreener.com/solana/7ytnie16mzq7vcaaz52ogubgu3nhff49luypvt5e8jkz" class="body-1 contact-number hover-underline" target="_blank" rel="noopener noreferrer">
+              4AkCN6KLeCmUDjWLg4XyQpuZuWtwBdPcbtBQjsA2pump
+            </a>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #PARTNERS SECTION
+      -->
+
+      <section class="section partners-section" aria-label="partners" id="partners">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-7.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-8.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle text-center label-2">Community Partners</p>
+
+          <h2 class="headline-1 section-title text-center">🍕 Our Trusted Partners 🍕</h2>
+
+          <p class="section-text text-center">
+            Working together with local pizza establishments to build stronger communities and spread the joy of pizza worldwide
+          </p>
+
+          <!-- Partner Carousel -->
+          <div class="partners-carousel">
+            <div class="partners-track">
+              <div class="partner-item">
+                <a href="https://www.instagram.com/tastee_pizza1982/?hl=en" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/87223338_205483950838711_1360256017119576064_n.jpg" alt="Tastee Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://m.facebook.com/JJs.Best.Pizza.Wyandotte/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/492551658_1237382775056532_8825129307267605937_n.jpg" alt="JJ's Best Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://haledonpizza.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/logo.png" alt="Haledon Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://www.rocknthegrill.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/rocknthegrillh.png" alt="Rock'n The Grill" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://www.dominos.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/dominos_social_logo.jpg" alt="Domino's Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <!-- Duplicate items for seamless loop -->
+              <div class="partner-item">
+                <a href="https://www.instagram.com/tastee_pizza1982/?hl=en" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/87223338_205483950838711_1360256017119576064_n.jpg" alt="Tastee Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://m.facebook.com/JJs.Best.Pizza.Wyandotte/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/492551658_1237382775056532_8825129307267605937_n.jpg" alt="JJ's Best Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://haledonpizza.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/logo.png" alt="Haledon Pizza" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://www.rocknthegrill.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/rocknthegrillh.png" alt="Rock'n The Grill" class="partner-logo">
+                </a>
+              </div>
+              
+              <div class="partner-item">
+                <a href="https://www.dominos.com/" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/partners/dominos_social_logo.jpg" alt="Domino's Pizza" class="partner-logo">
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #EXCHANGES SECTION
+      -->
+
+      <section class="section exchanges-section" aria-label="exchanges" id="exchanges">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-8.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-9.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle text-center label-2">Trading Platforms</p>
+
+          <h2 class="headline-1 section-title text-center">🍕 Exchange Partners 🍕</h2>
+
+          <p class="section-text text-center">
+            Trade $PIZZA tokens on these trusted exchange platforms
+          </p>
+
+          <!-- Exchange Carousel -->
+          <div class="exchanges-carousel">
+            <div class="exchanges-track">
+              <div class="exchange-item">
+                <a href="https://www.coingecko.com/en/coins/pizza-2" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/coingecko.png" alt="CoinGecko" class="exchange-logo">
+                </a>
+              </div>
+              
+              <div class="exchange-item">
+                <a href="https://dexscreener.com/solana/7ytnie16mzq7vcaaz52ogubgu3nhff49luypvt5e8jkz" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/dex.png" alt="DEX Screener" class="exchange-logo">
+                </a>
+              </div>
+              
+              <div class="exchange-item">
+                <a href="https://www.mexc.com/price/pizza" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/mexc_logo-removebg-preview.png" alt="MEXC Exchange" class="exchange-logo">
+                </a>
+              </div>
+              
+              <!-- Duplicate items for seamless loop -->
+              <div class="exchange-item">
+                <a href="https://www.coingecko.com/en/coins/pizza-2" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/coingecko.png" alt="CoinGecko" class="exchange-logo">
+                </a>
+              </div>
+              
+              <div class="exchange-item">
+                <a href="https://dexscreener.com/solana/7ytnie16mzq7vcaaz52ogubgu3nhff49luypvt5e8jkz" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/dex.png" alt="DEX Screener" class="exchange-logo">
+                </a>
+              </div>
+              
+              <div class="exchange-item">
+                <a href="https://www.mexc.com/price/pizza" target="_blank" rel="noopener noreferrer">
+                  <img src="./assets/images/pizza/exchanges/mexc_logo-removebg-preview.png" alt="MEXC Exchange" class="exchange-logo">
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #VIDEO SECTION
+      -->
+
+      <section class="section video-section bg-black-10" aria-label="videos" id="videos">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-5.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-6.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle text-center label-2">Community Content</p>
+
+          <h2 class="headline-1 section-title text-center">🍕 Pizza Community Videos 🍕</h2>
+
+          <p class="section-text text-center">
+            Watch our latest videos from the Pizza Community and stay updated with our mission
+          </p>
+
+          <!-- Video Carousel -->
+          <div class="video-carousel">
+            <button class="video-nav-btn prev" type="button" aria-label="Previous video" onclick="handlePrevClick(event)">
+              <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+            </button>
+            
+            <div class="video-track" id="video-track">
+              <div class="video-item">
+                <div class="video-container">
+                  <iframe data-src="https://drive.google.com/file/d/1Tyl-TBUuO44MpZAS953QFcMWfJgkj2ZA/preview" 
+                          frameborder="0" 
+                          allow="autoplay; fullscreen"
+                          allowfullscreen
+                          loading="lazy"
+                          sandbox="allow-same-origin allow-scripts"
+                          class="lazy-iframe">
+                  </iframe>
+                </div>
+              </div>
+              
+              <div class="video-item">
+                <div class="video-container">
+                  <iframe data-src="https://drive.google.com/file/d/1iQ-aVlhXy_PehKr4V_2gbp3W3ZF6WsVn/preview" 
+                          frameborder="0" 
+                          allow="autoplay; fullscreen"
+                          allowfullscreen
+                          loading="lazy"
+                          sandbox="allow-same-origin allow-scripts"
+                          class="lazy-iframe">
+                  </iframe>
+                </div>
+              </div>
+              
+              <div class="video-item">
+                <div class="video-container">
+                  <iframe data-src="https://drive.google.com/file/d/10Zoq88or_370rHoQww6KEP9wR7My_qY7/preview" 
+                          frameborder="0" 
+                          allow="autoplay; fullscreen"
+                          allowfullscreen
+                          loading="lazy"
+                          sandbox="allow-same-origin allow-scripts"
+                          class="lazy-iframe">
+                  </iframe>
+                </div>
+              </div>
+              
+              <div class="video-item">
+                <div class="video-container">
+                  <iframe data-src="https://drive.google.com/file/d/1AC6NOcpmJxn2d6gWct66VPeAh0FwP0w9/preview" 
+                          frameborder="0" 
+                          allow="autoplay; fullscreen"
+                          allowfullscreen
+                          loading="lazy"
+                          sandbox="allow-same-origin allow-scripts"
+                          class="lazy-iframe">
+                  </iframe>
+                </div>
+              </div>
+              
+            </div>
+            
+            <button class="video-nav-btn next" type="button" aria-label="Next video" onclick="handleNextClick(event)">
+              <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #GOOGLE MAPS SECTION
+      -->
+
+      <section class="section maps-section bg-black-10" aria-label="maps" id="maps">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-1.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-2.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle text-center label-2">Global Impact</p>
+
+          <h2 class="headline-1 section-title text-center">🍕 ​Join the $PIZZA Revolution! 🍕</h2>
+
+          <p class="section-text text-center">
+            ​Experience the blend of digital innovation and delicious rewards. Be a part of a community that is building, playing, and giving back. Get started with $PIZZA today and take a bite out of the future of finance.
+          </p>
+
+          <div class="map-container">
+            <div id="world-map" style="height: 500px; width: 100%; border-radius: 15px; overflow: hidden;"></div>
+          </div>
+
+          <div class="map-stats">
+            <div class="stat-item">
+              <h3>🌍 Global Locations</h3>
+              <p class="stat-number" id="total-locations">9</p>
+            </div>
+            <div class="stat-item">
+              <h3>🍕 Meals Served</h3>
+              <p class="stat-number" id="total-meals">1,250</p>
+            </div>
+            <div class="stat-item">
+              <h3>🤝 Community Partners</h3>
+              <p class="stat-number" id="total-partners">18</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #GALLERY SECTION
+      -->
+
+      <section class="section gallery-section" aria-label="gallery" id="gallery">
+        
+        <!-- Background Shapes for Desktop -->
+        <div class="shape shape-1 desktop-only">
+          <img src="./assets/images/shape-3.png" alt="Pizza Shape">
+        </div>
+        <div class="shape shape-2 desktop-only">
+          <img src="./assets/images/shape-4.png" alt="Pizza Shape">
+        </div>
+
+        <div class="container">
+
+          <p class="section-subtitle text-center label-2">Community Impact</p>
+
+          <h2 class="headline-1 section-title text-center">🍕 Campaign Gallery 🍕</h2>
+
+          <!-- Enhanced Gallery with Anime.js -->
+          <div class="gallery-container" id="mobile_control">
+            <div class="content">
+              <h1 class="title">Pizza Community</h1>
+              <div class="helmet">
+                <div class="planet_position">
+                  <div class="planet_shadow"></div>
+                  <div class="planet_photo"></div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom">
+              <div class="nav">
+                <span id="next" class="action"><i class="material-icons">keyboard_arrow_left</i></span>
+                <span id="prev" class="action"><i class="material-icons">keyboard_arrow_right</i></span>
+              </div>
+              <div class="orbit">
+                <div class="planet_container">
+                  <div class="planet pt earth" id="pl0">
+                    <div class="moon">
+                      <span></span>
+                    </div>
+                  </div>
+                  <div class="planet mars" id="pl1">
+                    <div class="moon">
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div class="planet jupiter" id="pl2"></div>
+                  <div class="planet saturn" id="pl3">
+                    <div class="ring"></div>
+                  </div>
+                  <div class="planet uranus" id="pl4"></div>
+                  <div class="planet neptune" id="pl5"></div>
+                  <div class="planet mercury" id="pl6"></div>
+                  <div class="planet venus" id="pl7"></div>
+                  <div class="planet pluto" id="pl8"></div>
+                </div>
+                <div class="name_container">
+                  <p class="pn">Pizza Community</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 
+        - #COMMUNITY SECTION
+      -->
+
+      <section class="section community-section bg-black-10" aria-label="community" id="community">
+        <div class="container">
+
+          <p class="section-subtitle label-2 text-center">Join The Movement</p>
+
+          <h2 class="section-title headline-1 text-center">🚀 LET'S CRUST! 🚀</h2>
+
+          <ul class="grid-list">
+
+            <li>
+              <a href="platform-index.html" class="community-card has-before hover:shine">
+
+                <div class="card-banner img-holder" style="--width: 350; --height: 450;">
+                  <img src="./assets/images/event-1.jpg" width="350" height="450" loading="lazy"
+                    alt="Partner with us" class="img-cover">
+                </div>
+
+                <div class="card-content">
+                  <p class="card-subtitle label-2 text-center">Partnership</p>
+
+                  <h3 class="card-title title-2 text-center">
+                    Become a Pizza Partner and earn rewards!
+                  </h3>
+                </div>
+
+              </a>
+            </li>
+
+            <li>
+              <a href="platform-index.html" class="community-card has-before hover:shine">
+
+                <div class="card-banner img-holder" style="--width: 350; --height: 450;">
+                  <img src="./assets/images/event-2.jpg" width="350" height="450" loading="lazy"
+                    alt="Volunteer with us" class="img-cover">
+                </div>
+
+                <div class="card-content">
+                  <p class="card-subtitle label-2 text-center">Volunteer</p>
+
+                  <h3 class="card-title title-2 text-center">
+                    Help spread pizza love worldwide!
+                  </h3>
+                </div>
+
+              </a>
+            </li>
+
+            <li>
+              <a href="platform-index.html" class="community-card has-before hover:shine">
+
+                <div class="card-banner img-holder" style="--width: 350; --height: 450;">
+                  <img src="./assets/images/photo_2025-08-05_18-45-59.jpg" width="350" height="450" loading="lazy"
+                    alt="Exchange Platform" class="img-cover">
+                </div>
+
+                <div class="card-content">
+                  <p class="card-subtitle label-2 text-center">Exchange</p>
+
+                  <h3 class="card-title title-2 text-center">
+                    Trade $PIZZA tokens on our platform!
+                  </h3>
+                </div>
+
+              </a>
+            </li>
+
+            <li>
+              <a href="platform-index.html" class="community-card has-before hover:shine">
+
+                <div class="card-banner img-holder" style="--width: 350; --height: 450;">
+                  <img src="./assets/images/photo_2025-08-05_18-45-58.jpg" width="350" height="450" loading="lazy"
+                    alt="Our Technology" class="img-cover">
+                </div>
+
+                <div class="card-content">
+                  <p class="card-subtitle label-2 text-center">Technology</p>
+
+                  <h3 class="card-title title-2 text-center">
+                    Discover our cutting-edge pizza tech!
+                  </h3>
+                </div>
+
+              </a>
+            </li>
+
+          </ul>
+
+         </div>
+       </section>
+
+    </article>
+  </main>
+
+  <!-- 
+    - #FOOTER
+  -->
+
+  <footer class="footer" style="background-image: url('./assets/images/footer-bg.jpg')">
+    
+    <!-- Background Shapes for Desktop -->
+    <div class="shape shape-1 desktop-only">
+      <img src="./assets/images/shape-5.png" alt="Pizza Shape">
+    </div>
+    <div class="shape shape-2 desktop-only">
+      <img src="./assets/images/shape-6.png" alt="Pizza Shape">
+    </div>
+
+    <div class="container">
+
+      <div class="footer-top grid-list">
+
+        <div class="footer-brand has-before has-after">
+
+          <a href="#" class="logo">
+            <img src="./assets/images/pizza/pizzaimages/main_logo.png" width="160" height="50" loading="lazy" alt="pizza coin home">
+          </a>
+
+          <address class="body-4">
+            Global Pizza Community, Feeding the World
+          </address>
+
+          <div class="text-center">
+            <a href="mailto:pizzahub@pizzabit.io" class="body-4 contact-link">pizzahub@pizzabit.io</a>
+
+            <a href="https://t.me/+PrL-wbxrW39kODBk" class="body-4 contact-link">Join Telegram: @PizzaCoin</a>
+          </div>
+
+          <p class="body-4">
+            Open : 24/7 - Always Serving
+          </p>
+
+          <div class="wrapper">
+            <div class="separator"></div>
+            <div class="separator"></div>
+            <div class="separator"></div>
+          </div>
+
+        </div>
+
+        <ul class="footer-list">
+
+          <li>
+            <a href="#home" class="label-2 footer-link hover-underline">Home</a>
+          </li>
+
+          <li>
+            <a href="#mission" class="label-2 footer-link hover-underline">Mission</a>
+          </li>
+
+          <li>
+            <a href="#gallery" class="label-2 footer-link hover-underline">Gallery</a>
+          </li>
+
+          <li>
+            <a href="#community" class="label-2 footer-link hover-underline">Community</a>
+          </li>
+
+        </ul>
+
+        <ul class="footer-list">
+
+          <li>
+            <a href="https://t.me/+PrL-wbxrW39kODBk" class="label-2 footer-link hover-underline">Telegram</a>
+          </li>
+
+          <li>
+            <a href="https://x.com/Pizza_on__Sol" class="label-2 footer-link hover-underline">Twitter</a>
+          </li>
+
+          <li>
+            <a href="#" class="label-2 footer-link hover-underline">YouTube</a>
+          </li>
+
+        </ul>
+
+      </div>
+
+      <div class="footer-bottom">
+
+        <p class="copyright">
+          &copy; 2025 $PIZZA Community. Made with ❤️ and 🍕 by the Chief Toppings Engineer! TO THE MOON! 🚀🌕 💎🙌
+        </p>
+
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- 
+    - #BACK TO TOP
+  -->
+
+  <a href="#top" class="back-top-btn active" aria-label="back to top" data-back-top-btn>
+    <ion-icon name="chevron-up" aria-hidden="true"></ion-icon>
+  </a>
+
+  <!-- 
+    - custom js link
+  -->
+  <script src="./assets/js/script.js"></script>
+  <script src="./assets/js/pizza-builder.js"></script>
+  <script src="./assets/js/gallery.js"></script>
+  <script src="./assets/js/map-data.js"></script>
+  
+  <!-- Video Navigation Script -->
+  <script>
+    // Simple and direct video carousel implementation
+    let currentIndex = 0;
+    let videoTrack = null;
+    let videoItems = [];
+    
+    // Global click handlers
+    function handlePrevClick(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      console.log('Prev button clicked!');
+      moveVideos('left');
+    }
+    
+    function handleNextClick(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      console.log('Next button clicked!');
+      moveVideos('right');
+    }
+    
+    function moveVideos(direction) {
+      console.log('moveVideos called with direction:', direction);
+      
+      // Get elements if not already found
+      if (!videoTrack) {
+        videoTrack = document.getElementById('video-track');
+        videoItems = document.querySelectorAll('.video-item');
+        console.log('Found video elements:', { track: !!videoTrack, items: videoItems.length });
+      }
+      
+      if (!videoTrack || videoItems.length === 0) {
+        console.log('Video elements not found!');
+        return;
+      }
+      
+      const totalVideos = videoItems.length;
+      const videoWidth = videoItems[0].offsetWidth + 60; // width + margin
+      const containerWidth = videoTrack.parentElement.offsetWidth;
+      const visibleVideos = Math.floor(containerWidth / videoWidth);
+      
+      console.log('Video dimensions:', { videoWidth, containerWidth, visibleVideos, totalVideos });
+      
+      if (direction === 'left') {
+        currentIndex = Math.max(0, currentIndex - 1);
+      } else {
+        currentIndex = Math.min(totalVideos - visibleVideos, currentIndex + 1);
+      }
+      
+      const translateX = -currentIndex * videoWidth;
+      console.log('Moving to index:', currentIndex, 'translateX:', translateX);
+      
+      videoTrack.style.transform = `translateX(${translateX}px)`;
+      
+      // Update button states
+      updateButtonStates();
+    }
+    
+    function updateButtonStates() {
+      const prevBtn = document.querySelector('.video-nav-btn.prev');
+      const nextBtn = document.querySelector('.video-nav-btn.next');
+      
+      if (!prevBtn || !nextBtn) return;
+      
+      const totalVideos = videoItems.length;
+      const videoWidth = videoItems[0].offsetWidth + 60;
+      const containerWidth = videoTrack.parentElement.offsetWidth;
+      const visibleVideos = Math.floor(containerWidth / videoWidth);
+      
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex >= totalVideos - visibleVideos;
+      
+      console.log('Button states:', { currentIndex, totalVideos, visibleVideos, prevDisabled: prevBtn.disabled, nextDisabled: nextBtn.disabled });
+    }
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, setting up video carousel...');
+      
+      // Get elements
+      videoTrack = document.getElementById('video-track');
+      videoItems = document.querySelectorAll('.video-item');
+      
+      console.log('Initial elements found:', { track: !!videoTrack, items: videoItems.length });
+      
+      if (videoTrack && videoItems.length > 0) {
+        updateButtonStates();
+        console.log('Video carousel setup complete');
+      } else {
+        console.log('Video elements not found on DOM load');
+      }
+    });
+    
+    // Also initialize when window loads
+    window.addEventListener('load', function() {
+      console.log('Window loaded, re-checking video carousel...');
+      
+      if (!videoTrack || videoItems.length === 0) {
+        videoTrack = document.getElementById('video-track');
+        videoItems = document.querySelectorAll('.video-item');
+        console.log('Re-found elements:', { track: !!videoTrack, items: videoItems.length });
+      }
+      
+      if (videoTrack && videoItems.length > 0) {
+        updateButtonStates();
+        console.log('Video carousel ready');
+      }
+    });
+  </script>
+  
+  <!-- 
+    - Leaflet JS for maps
+  -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- 
+    - ionicon link
+  -->
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+  <script>
+    // Enhanced preloader that waits for videos to load
+    document.addEventListener('DOMContentLoaded', function() {
+      const preloader = document.querySelector('[data-preload]');
+      const lazyIframes = document.querySelectorAll('.lazy-iframe');
+      let videosLoaded = 0;
+      let allLoaded = false;
+      
+      console.log(`🍕 Found ${lazyIframes.length} videos to load`);
+      
+      // Function to hide preloader and show page
+      function showPage() {
+        if (allLoaded) return; // Prevent double execution
+        allLoaded = true;
+        
+        console.log('🍕 All videos ready, hiding preloader...');
+        
+        setTimeout(() => {
+          if (preloader) {
+            preloader.classList.add('loaded');
+          }
+          document.body.classList.add('loaded');
+          console.log('🍕 Page is now visible!');
+        }, 800); // Slight delay for smooth transition
+      }
+      
+      // Function called when a video loads
+      function onVideoLoad(index, success = true) {
+        videosLoaded++;
+        const status = success ? '✅' : '⚠️';
+        console.log(`${status} Video ${index + 1}/${lazyIframes.length} loaded (${videosLoaded} total)`);
+        
+        // Show page when all videos are processed (loaded or timed out)
+        if (videosLoaded >= lazyIframes.length) {
+          showPage();
+        }
+      }
+      
+      // Load videos and track their status
+      if (lazyIframes.length > 0) {
+        lazyIframes.forEach((iframe, index) => {
+          const src = iframe.getAttribute('data-src');
+          if (src) {
+            // Set up event handlers before loading
+            iframe.onload = () => onVideoLoad(index, true);
+            iframe.onerror = () => onVideoLoad(index, false);
+            
+            // Load the video
+            iframe.src = src;
+            iframe.removeAttribute('data-src');
+            iframe.classList.remove('lazy-iframe');
+            
+            // Timeout fallback for each video (8 seconds)
+            setTimeout(() => {
+              // Check if this video hasn't been counted yet
+              if (iframe.onload || iframe.onerror) {
+                // Clear the event handlers to prevent double counting
+                iframe.onload = null;
+                iframe.onerror = null;
+                console.warn(`⏰ Video ${index + 1} timed out after 8 seconds`);
+                onVideoLoad(index, false);
+              }
+            }, 8000);
+          } else {
+            // No src, count as loaded
+            onVideoLoad(index, false);
+          }
+        });
+        
+        // Maximum wait time before showing page regardless (15 seconds)
+        setTimeout(() => {
+          if (!allLoaded) {
+            console.warn('⏰ Maximum wait time reached, showing page anyway');
+            showPage();
+          }
+        }, 15000);
+        
+      } else {
+        // No videos found, show page immediately
+        console.log('🍕 No videos found, showing page');
+        showPage();
+      }
+    });
+  </script>
+
+</body>
+
+</html> 

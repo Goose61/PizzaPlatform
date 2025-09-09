@@ -94,9 +94,7 @@ const walletSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance
-walletSchema.index({ userId: 1 });
-walletSchema.index({ publicKey: 1 });
+// Additional indexes for performance (userId and publicKey already indexed via unique: true)
 walletSchema.index({ 'tokenBalances.mint': 1 });
 
 // Instance methods

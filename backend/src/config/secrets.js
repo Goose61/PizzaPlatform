@@ -4,12 +4,16 @@ class SecretManager {
   constructor() {
     this.secrets = null;
     this.requiredSecrets = [
-      'MONGO_URI',
+      'MONGODB_URI', // Fixed: Align with backend.js
       'EMAIL_PASS', 
-      'RECAPTCHA_SECRET_KEY',
-      'RECAPTCHA_SITE_KEY',
       'JWT_SECRET',
       'ADMIN_JWT_SECRET'
+    ];
+    
+    this.optionalSecrets = [
+      'RECAPTCHA_SECRET_KEY',
+      'RECAPTCHA_SITE_KEY',
+      'KYC_WEBHOOK_SECRET' // Added for webhook signature verification
     ];
   }
 
@@ -38,12 +42,13 @@ class SecretManager {
     }
 
     return {
-      mongoUri: process.env.MONGO_URI,
+      mongoUri: process.env.MONGODB_URI,
       emailPass: process.env.EMAIL_PASS,
-      recaptchaSecret: process.env.RECAPTCHA_SECRET_KEY,
-      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      recaptchaSecret: process.env.RECAPTCHA_SECRET_KEY || null,
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY || null,
       jwtSecret: process.env.JWT_SECRET,
       adminJwtSecret: process.env.ADMIN_JWT_SECRET,
+      kycWebhookSecret: process.env.KYC_WEBHOOK_SECRET || null,
       port: process.env.PORT || 3001,
       nodeEnv: process.env.NODE_ENV || 'development'
     };
